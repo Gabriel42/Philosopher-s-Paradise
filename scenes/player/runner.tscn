@@ -1,0 +1,68 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/runner.gd" id="1_runner"]
+[ext_resource type="Resource" path="res://resources/movement.tres" id="2_movement"]
+
+[sub_resource type="CapsuleShape3D" id="Shape_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="Mesh_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_body"]
+albedo_color = Color(0.95, 0.45, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_nose"]
+size = Vector3(0.25, 0.25, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="Mat_nose"]
+albedo_color = Color(0.15, 0.15, 0.2, 1)
+
+[sub_resource type="LabelSettings" id="Label_speed"]
+font_size = 28
+outline_size = 6
+outline_color = Color(0, 0, 0, 0.6)
+
+[node name="Runner" type="CharacterBody3D"]
+script = ExtResource("1_runner")
+movement = ExtResource("2_movement")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("Shape_body")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("Mesh_body")
+surface_material_override/0 = SubResource("Mat_body")
+
+[node name="Nose" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -0.45)
+mesh = SubResource("Mesh_nose")
+surface_material_override/0 = SubResource("Mat_nose")
+
+[node name="CameraPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+spring_length = 5.0
+margin = 0.2
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+current = true
+fov = 75.0
+far = 1500.0
+
+[node name="Hud" type="CanvasLayer" parent="."]
+
+[node name="Speed" type="Label" parent="Hud"]
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 420.0
+offset_bottom = 60.0
+mouse_filter = 2
+label_settings = SubResource("Label_speed")

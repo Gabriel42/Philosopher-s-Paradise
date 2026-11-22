@@ -45,16 +45,27 @@ When a task changes the game's rules or feel, propose the matching
 
 ```
 docs/             design.md, notes.md, TODO.md, done.md, verified.md (see table above)
-scenes/main/      main.tscn + main.gd: entry scene (for now a placeholder test
-                  world: ground, a slope, a pillar, a fixed camera)
-scenes/player/    the runner (not made yet)
+scenes/main/      main.tscn + main.gd: entry scene (sky, sun, fog, the endless
+                  level with the runner in it)
+scenes/level/     endless_level.tscn + .gd (EndlessLevel): keeps chunks around
+                  the runner (builds ahead, frees behind), shifts the world back
+                  to the centre every 2 km (origin), respawns the runner ahead
+                  when it falls off
+                  terrain_chunk.gd (TerrainChunk): one chunk: ground mesh with
+                  hanging sides, collision, rocks and pillars
+scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (capsule,
+                  follow camera with mouse look, speed label)
 scripts/autoload/ global singletons (none yet)
-scripts/core/     game logic without nodes or UI
-resources/        .tres data Gabriel tweaks (movement numbers, levels...)
+scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
+                  terrain_height.gd (TerrainHeight): ground height at any point
+                  (downhill + hills + bumps + ramps), pure and seeded
+                  movement.gd (Movement): every number of the runner
+resources/        terrain.tres, movement.tres (Gabriel tweaks these)
 assets/           art/, audio/sfx/, audio/music/, fonts/
 tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
-                  core/test_project: the main scene loads
+                  core/: test_project (main scene loads), test_terrain_height
+                  level/test_endless_level, player/test_runner
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in
@@ -94,6 +105,12 @@ A script that belongs to one scene lives next to it; shared scripts go in
   `_process`; use `delta` everywhere so speed doesn't depend on frame rate.
 - Randomness that shapes a level or a run goes through its own
   `RandomNumberGenerator` with a seed, so runs stay reproducible.
+- **Endless level coordinates:** positions of nodes are in the level's
+  shifted space; add `EndlessLevel.origin` to get real world coordinates
+  (what `TerrainHeight.height_at` takes). Anything that remembers world
+  positions (trails, effects) listens to `origin_shifted`. Ground height
+  must stay a pure function of the real position and the seed, so chunks
+  built apart still join.
 - Game content (levels, abilities, items) is defined as `.tres` resources, not
   hard-coded.
 - Any full-screen `Control` that is only decoration needs
