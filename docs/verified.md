@@ -187,3 +187,27 @@ What was tested, and how.
   -194, -219, -244 ... 0 (forward only), run animation, no ring child.
   Screenshot mid-flip: tucked ball, no ring on the ground.
 - Not checked: how the flip-out feels in play (Gabriel).
+
+## 2026-11-22 – Enemies (red capsules that intercept) + F3 debug panel
+- Test suite: 44 passed, 0 failed. New `enemy/test_enemy_swarm` (pretend
+  runner moved by hand, `EnemySwarm.step()` at 60 Hz): runs at 0.8 × the
+  runner's 30 m/s (24 ± 0.01); a jump to 60 m/s only gets it from 24 to 29 in
+  0.25 s (20 m/s²); stays on `height_at` to 1 mm; an enemy 15 m to the side
+  cuts off a runner going straight (1 touch); with the runner drifting right
+  it leads it by > 5 m; a sidestep 5 m before contact dodges (0 touches); a
+  touch counts once while overlapping, again after parting (signal sends 1,
+  2); the runner 1.2 m above an enemy doesn't touch it; an enemy 25 m behind
+  goes 120..240 m ahead at the runner-matched speed; an origin shift at
+  2.5 km keeps enemies at the same real position; count 50 → 10 while running
+  resizes the pool and the MultiMesh.
+- Game in a window (`--screen 1`, temporary SceneTree scripts, runner holding
+  forward): screenshots show the red capsules (ten placed 8–30 m ahead) on the
+  ground, a crowd far ahead with 2000 enemies, and the F3 panel (touches,
+  enemy count, FPS) toggled by a `toggle_debug` event.
+- Cost of `EnemySwarm.step` (GTX 1660 SUPER machine, GDScript): 40 enemies
+  0.24 ms, 500 → 2.3 ms, 2000 → 9.4 ms (≈ 4.7 µs per enemy, most of it the
+  ground height). 0, 40 and 2000 enemies all run at a steady 16.7 ms per frame
+  (vsync) over 300 frames. One earlier probe read 7 FPS with 2000 enemies
+  while the runner was stuck on a rock; not reproduced.
+- Not checked: how dodging feels with a real player (Gabriel); enemies pass
+  through rocks and pillars and glide over ramps (by design, no physics).

@@ -36,10 +36,13 @@
 - A level is an endless strip of floating ground (80 m wide) that goes downhill, with rolling hills, small bumps and ramps (a kicker, then a downhill landing). Falling off the sides puts you back ahead with half your speed.
 - Rocks and pillars are scattered on it; hitting one stops you.
 - Each level comes from a seed: the same seed gives the same ground.
+- Enemies (placeholder: small red capsules) appear ahead and run downhill a
+  little slower than you (they match a share of your speed), moving sideways to
+  cut you off; you dodge them. Touching one does nothing yet (only counted).
 - Runs: ?
 
 ## Setting and art
 ?
 
 ## Controls
-- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits. Mouse / gamepad: ?
+- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel. Mouse / gamepad: ?
