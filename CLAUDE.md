@@ -44,6 +44,7 @@ When a task changes the game's rules or feel, propose the matching
 ## Project structure
 
 ```
+CREDITS.md        third-party assets that need credit
 docs/             design.md, notes.md, TODO.md, done.md, verified.md (see table above)
 scenes/main/      main.tscn + main.gd: entry scene (sky, sun, fog, the endless
                   level with the runner in it)
@@ -53,8 +54,11 @@ scenes/level/     endless_level.tscn + .gd (EndlessLevel): keeps chunks around
                   when it falls off
                   terrain_chunk.gd (TerrainChunk): one chunk: ground mesh with
                   hanging sides, collision, rocks and pillars
-scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (capsule,
-                  follow camera with mouse look, speed label)
+scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
+                  camera with mouse look, speed label)
+                  runner_model.tscn + .gd (RunnerModel): Mannequiny model,
+                  picks idle / run / jump animations
+                  blocky_model.tscn: first blocky human (not used)
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -62,6 +66,8 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
                   movement.gd (Movement): every number of the runner
 resources/        terrain.tres, movement.tres (Gabriel tweaks these)
 assets/           art/, audio/sfx/, audio/music/, fonts/
+                  art/characters/mannequiny/: the runner model (CC-BY 4.0,
+                  see CREDITS.md)
 tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
                   core/: test_project (main scene loads), test_terrain_height

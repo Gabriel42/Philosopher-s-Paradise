@@ -1,0 +1,5 @@
+Mannequiny 0.3.0, from https://github.com/gdquest-demos/godot-3d-mannequin
+
+Licence: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Credit required if used in the game:
+  "Mannequiny" by GDQuest and contributors (https://www.gdquest.com/)

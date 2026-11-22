@@ -57,3 +57,21 @@ func test_fast_fall_lands_sooner() -> void:
 		await _wait(1)
 		frames += 1
 	assert_true(frames < 30, "landed after %d frames (a normal jump is about 44)" % frames)
+
+
+func test_model_idles_standing_and_runs_when_moving() -> void:
+	var model := runner.get_node("Model") as RunnerModel
+	await _wait(60)
+	assert_eq(model.current_animation(), "idle", "standing")
+	runner.move_input = Vector2(0.0, 1.0)
+	await _wait(60)
+	assert_eq(model.current_animation(), "run", "running")
+
+
+func test_model_jumps_in_the_air() -> void:
+	var model := runner.get_node("Model") as RunnerModel
+	await _wait(60)
+	runner.wants_jump = true
+	await _wait(10)
+	assert_false(runner.is_on_floor(), "in the air")
+	assert_eq(model.current_animation(), "air_jump", "in the air")

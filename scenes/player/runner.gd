@@ -28,7 +28,7 @@ var _was_on_floor := false
 @onready var _pivot: Node3D = $CameraPivot
 @onready var _arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var _camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
-@onready var _model: Node3D = $Model
+@onready var _model: RunnerModel = $Model
 @onready var _speed_label: Label = $Hud/Speed
 
 
@@ -151,6 +151,7 @@ func _land() -> void:
 
 func _update_visuals() -> void:
 	_model.rotation.y = atan2(-heading.x, -heading.z)
+	_model.animate(speed if is_on_floor() else 0.0, is_on_floor())
 	var now := velocity.length()
 	var fast := clampf(now / movement.max_speed, 0.0, 1.0)
 	_arm.spring_length = lerpf(movement.camera_distance, movement.camera_distance_fast, fast)
