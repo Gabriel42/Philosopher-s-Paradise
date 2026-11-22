@@ -55,6 +55,8 @@ scenes/level/     endless_level.tscn + .gd (EndlessLevel): keeps chunks around
                   hanging sides, collision, rocks and pillars
 scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (capsule,
                   follow camera with mouse look, speed label)
+                  runner_effects.gd (RunnerEffects): landing and fast-fall
+                  effects, driven by the runner's signals
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -65,7 +67,7 @@ assets/           art/, audio/sfx/, audio/music/, fonts/
 tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
                   core/: test_project (main scene loads), test_terrain_height
-                  level/test_endless_level, player/test_runner
+                  level/test_endless_level, player/test_runner, player/test_landing
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in

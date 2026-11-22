@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/runner.gd" id="1_runner"]
 [ext_resource type="Resource" path="res://resources/movement.tres" id="2_movement"]
+[ext_resource type="Script" path="res://scenes/player/runner_effects.gd" id="3_effects"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.4
@@ -66,3 +67,8 @@ offset_right = 420.0
 offset_bottom = 60.0
 mouse_filter = 2
 label_settings = SubResource("Label_speed")
+
+[node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("model", "camera")]
+script = ExtResource("3_effects")
+model = NodePath("../Model")
+camera = NodePath("../CameraPivot/SpringArm3D/Camera3D")
