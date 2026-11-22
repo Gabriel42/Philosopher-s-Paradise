@@ -107,3 +107,83 @@ What was tested, and how.
   failed. The runner now lands on the slope with speed kept (3.7 m/s at frame
   60 with no input), so the idle check calls the model directly. Game run
   300 frames in a window: no errors.
+
+## 2026-11-22 – Fast fall roll + skydive in the air (no glow, no speed lines)
+- Removed from `runner_effects.gd`: the orange glow, the stretch, the orange
+  slam ring and the speed lines. A fast-fall landing still throws more dust
+  and a wider ring, in the normal colours.
+- The model has no tuck or skydive animation, so `RunnerPose` (a
+  `SkeletonModifier3D`, checked in 4.7.2's ClassDB: it has
+  `_process_modification_with_delta`) turns bones on top of the animation,
+  starting from the first frame of `idle`.
+- Test suite: 27 passed, 0 failed. `player/test_landing`
+  `test_fast_fall_rolls_tucked_then_skydives_then_rights`: dropped from 60 m
+  with fast fall, the body turns past -300° in 0.4 s, fully tucked on the
+  way, then holds -75° in the skydive pose, untucked; 0.3 s after landing it
+  is upright with no pose. `player/test_runner`
+  `test_model_skydives_in_the_air_only`: no pose on the ground, full
+  skydive at -75° 0.45 s into a jump, gone 0.3 s after landing. The two
+  effect-count tests updated (no speed-line node any more).
+- Screenshots (`--screen 1`, temporary SceneTree scripts): the model alone
+  from the side and from behind/above (skydive: belly down, arms and legs
+  spread, head up; tuck: a tight ball); in the level from the game camera
+  (skydive on a jump) and from the side (skydive, tucked mid-roll at -247°).
+  An earlier try (one flip then a dive in a held `air_jump` frame) was
+  replaced at Gabriel's request: roll more compact, skydive on every jump.
+- Found: running forward 8 s at ~30 m/s without jumping, the runner left the
+  ground 28 times over the hills and was in the skydive 137 of 480 frames
+  (only airs over `skydive_delay` = 0.15 s count). A jump with Shift on flat
+  ground is ~0.23 s in the air, shorter than the 0.3 s roll: the roll is cut
+  and finishes turning upright after landing.
+- Not checked: how it feels in play (Gabriel).
+
+## 2026-11-22 – No stutter near the ground, lean and quicker stride uphill
+- Cause found first (temporary probe, 15 s running forward on the real
+  level, no jumps): going uphill the runner left the floor for one frame 31
+  times (30 on rising ground), because Godot doesn't snap to the floor while
+  the velocity points up. Each hop switched run → air_jump → run with a
+  cross-fade: 103 animation switches in 15 s. Movement left unchanged.
+- After: the model ignores airs shorter than `air_grace` (0.1 s). Same
+  probe: 46 short hops, 27 animation switches (only real airs). Lean ranged
+  -6° (downhill cap) to 12° forward on climbs.
+- Test suite: 31 passed, 0 failed. New `player/test_runner_model`: five
+  one-frame hops keep the run animation, 0.2 s in the air starts the jump,
+  stride 2.0 on the flat → 2.6 on a 20° climb (14 m/s). New
+  `player/test_landing` test: leans 10° forward running up a 20° floor (not
+  in the skydive though off the floor every other frame), -6° going down.
+  One line of `test_model_idles_when_still_and_runs_when_fast` removed (it
+  expected a single off-ground frame to start the jump: the stutter).
+- Screenshot from the side on a real climb at 41 m/s: body leaning forward
+  into the hill, run stride.
+- Not checked: how the lean and the quicker stride feel in play (Gabriel).
+
+## 2026-11-22 – Landing runs straight on (no stomp, no squash)
+- Removed the landing squash from `RunnerEffects` (and its `model` link in
+  `runner.tscn`). On the ground the model now rights itself at
+  `land_tip_speed` (1500°/s), leaves the skydive pose in `land_pose_blend`
+  (0.05 s), and a landing cross-fades into the run in `land_blend` (0.05 s)
+  instead of 0.15 s. Dust, ring and camera shake unchanged.
+- Test suite: 32 passed, 0 failed. New `player/test_landing` test: fast fall
+  from 20 m, the model's scale stays exactly 1 through the landing, and
+  0.1 s after it plays run, upright, out of the skydive pose.
+- Temporary script on the real level (jump, fast fall, windowed): at
+  touchdown the run animation already plays, scale 1; 3 frames later tip 0°,
+  pose 0, upright running at 37 m/s (screenshot).
+- Seen: a short fast fall can land mid-roll (tip -144° at touchdown); the
+  body then turns back upright in about 0.1 s.
+- Not checked: how it feels in play (Gabriel).
+
+## 2026-11-22 – Mid-roll landing finishes the flip forward; no landing ring
+- `RunnerModel`: landing past head-first in the fast-fall roll (tip below
+  -90°) keeps the tuck and turns forward to upright at `land_tip_speed`;
+  before that it rights itself as before. `RunnerEffects`: the ring is gone
+  (with `good_kept`, `good_color`, `ring_size`, `ring_time`); dust and
+  camera shake stay.
+- Test suite: 33 passed, 0 failed. New `player/test_landing` test: fast
+  fall from 3 m with a 0.5 s roll lands at a tip below -90°, then only turns
+  forward, upright and running within 0.3 s. `test_hard_landing_leaves_effects`
+  now expects no ring under Effects.
+- Temporary script on the real level (windowed): touchdown at -169°, then
+  -194, -219, -244 ... 0 (forward only), run animation, no ring child.
+  Screenshot mid-flip: tucked ball, no ring on the ground.
+- Not checked: how the flip-out feels in play (Gabriel).

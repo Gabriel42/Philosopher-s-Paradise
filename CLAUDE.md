@@ -57,10 +57,13 @@ scenes/level/     endless_level.tscn + .gd (EndlessLevel): keeps chunks around
 scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
                   camera with mouse look, speed label)
                   runner_model.tscn + .gd (RunnerModel): Mannequiny model,
-                  picks idle / run / jump animations
+                  picks idle / run / jump animations, skydive in the air,
+                  tucked roll on fast fall
+                  runner_pose.gd (RunnerPose): bends the bones into the
+                  skydive and tuck poses (no animation for them)
                   blocky_model.tscn: first blocky human (not used)
-                  runner_effects.gd (RunnerEffects): landing and fast-fall
-                  effects, driven by the runner's signals
+                  runner_effects.gd (RunnerEffects): landing effects,
+                  driven by the runner's signals
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -73,7 +76,8 @@ assets/           art/, audio/sfx/, audio/music/, fonts/
 tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
                   core/: test_project (main scene loads), test_terrain_height
-                  level/test_endless_level, player/test_runner, player/test_landing
+                  level/test_endless_level, player/test_runner, player/test_landing,
+                  player/test_runner_model
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in

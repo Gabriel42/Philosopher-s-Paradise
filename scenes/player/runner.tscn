@@ -46,7 +46,6 @@ offset_bottom = 60.0
 mouse_filter = 2
 label_settings = SubResource("Label_speed")
 
-[node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("model", "camera")]
+[node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("3_effects")
-model = NodePath("../Model")
 camera = NodePath("../CameraPivot/SpringArm3D/Camera3D")

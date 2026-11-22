@@ -21,9 +21,16 @@
   forward speed: the most on a downhill slope, half on flat ground, none on a
   rising slope. You always keep at least ~75% of your horizontal speed.
 - Fast fall into a downhill slope is how you gain speed.
-- Effects show it: dust and a ring at the feet on landing (bright ring when you
-  kept your speed, orange after a fast fall), a squash, a shake on hard
-  landings; while fast falling the body stretches and glows, speed lines rush past.
+- Effects show it: dust at the feet on landing (more after a fast fall), a
+  camera shake on hard landings. No ring.
+- In the air the runner takes a skydive pose (belly down, arms and legs
+  spread). Starting a fast fall, it tucks into a ball and rolls forward once,
+  then opens back into the skydive.
+- Landing has no stomp and no squash: the runner snaps upright and just keeps
+  running. Landing in the middle of the roll (past head-first) finishes the
+  flip forward first.
+- On the ground the runner leans into the slope (forward going up, a little
+  back going down) and its stride quickens on climbs.
 
 ## Runs and levels
 - A level is an endless strip of floating ground (80 m wide) that goes downhill, with rolling hills, small bumps and ramps (a kicker, then a downhill landing). Falling off the sides puts you back ahead with half your speed.

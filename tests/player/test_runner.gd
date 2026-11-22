@@ -66,8 +66,6 @@ func test_model_idles_when_still_and_runs_when_fast() -> void:
 	assert_eq(model.current_animation(), "idle", "still")
 	model.animate(10.0, true)
 	assert_eq(model.current_animation(), "run", "fast")
-	model.animate(10.0, false)
-	assert_eq(model.current_animation(), "air_jump", "in the air")
 
 
 func test_model_runs_when_moving() -> void:
@@ -85,3 +83,19 @@ func test_model_jumps_in_the_air() -> void:
 	await _wait(10)
 	assert_false(runner.is_on_floor(), "in the air")
 	assert_eq(model.current_animation(), "air_jump", "in the air")
+
+
+func test_model_skydives_in_the_air_only() -> void:
+	var model := runner.get_node("Model") as RunnerModel
+	await _wait(60)
+	assert_near(model.pose_amount(), 0.0, 0.01, "no pose on the ground")
+	runner.wants_jump = true
+	await get_tree().create_timer(0.45).timeout
+	assert_false(runner.is_on_floor(), "in the air")
+	assert_near(model.pose_amount(), 1.0, 0.01, "skydive pose")
+	assert_near(model.tip(), -model.skydive_angle, 0.1, "tipped forward")
+	while not runner.is_on_floor():
+		await _wait(1)
+	await get_tree().create_timer(0.3).timeout
+	assert_near(model.pose_amount(), 0.0, 0.01, "pose gone after landing")
+	assert_near(model.tip(), 0.0, 0.1, "upright after landing")

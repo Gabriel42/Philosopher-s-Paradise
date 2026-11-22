@@ -182,7 +182,12 @@ func _land(before: Vector3) -> void:
 
 func _update_visuals() -> void:
 	_model.rotation.y = atan2(-heading.x, -heading.z)
-	_model.animate(speed if is_on_floor() else 0.0, is_on_floor())
+	var slope := 0.0
+	if is_on_floor():
+		var n := get_floor_normal()
+		var along := (heading - n * heading.dot(n)).normalized()
+		slope = rad_to_deg(asin(clampf(along.y, -1.0, 1.0)))
+	_model.animate(speed if is_on_floor() else 0.0, is_on_floor(), slope)
 	var now := velocity.length()
 	var fast := clampf(now / movement.max_speed, 0.0, 1.0)
 	_arm.spring_length = lerpf(movement.camera_distance, movement.camera_distance_fast, fast)
