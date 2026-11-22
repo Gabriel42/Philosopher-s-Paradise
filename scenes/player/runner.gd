@@ -2,10 +2,17 @@ class_name Runner
 extends CharacterBody3D
 ## The runner (placeholder movement). Runs where the camera looks, gains
 ## speed going downhill and loses it uphill, jumps, fast-falls. Landing keeps
-## the part of the speed that goes along the ground, so landing on a downhill
-## slope keeps your speed and landing flat loses some.
+## the speed along the ground and turns part of the fall into forward speed
+## (more on a downhill slope), see [method _land].
 ## Every number is in [member movement].
-## The mouse turns the camera (click to capture it, Esc to free it).
+## The mouse turns the camera (click to capture it). Esc quits the game.
+## Effects listen to [signal landed] and [signal fast_fall_changed].
+
+## Sent when touching the ground. [param impact]: speed into the ground (m/s);
+## [param kept]: speed after landing / total speed just before (can be > 1).
+signal landed(impact: float, kept: float)
+## Sent when fast fall starts or stops having an effect (held in the air).
+signal fast_fall_changed(on: bool)
 
 @export var movement: Movement
 ## Off in tests: then [member move_input], [member wants_jump] and
@@ -24,6 +31,7 @@ var heading := Vector3.FORWARD
 var _yaw := 0.0
 var _pitch := -0.25
 var _was_on_floor := false
+var _fast_fall_on := false
 
 @onready var _pivot: Node3D = $CameraPivot
 @onready var _arm: SpringArm3D = $CameraPivot/SpringArm3D
@@ -50,7 +58,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_yaw -= motion.relative.x * movement.mouse_sensitivity
 		_pitch = clampf(_pitch - motion.relative.y * movement.mouse_sensitivity, -1.3, 0.6)
 	elif event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		get_tree().quit()
 	elif event is InputEventMouseButton and event.pressed:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -73,14 +81,19 @@ func _physics_process(delta: float) -> void:
 	else:
 		_move_in_air(delta, wish)
 	wants_jump = false
+	var before := velocity
 	move_and_slide()
 	if is_on_wall():
 		# Hitting a rock or a pillar costs the speed it stopped.
 		var real := get_real_velocity()
 		speed = minf(speed, Vector3(real.x, 0.0, real.z).length())
 	if is_on_floor() and not _was_on_floor:
-		_land()
+		_land(before)
 	_was_on_floor = is_on_floor()
+	var fast_fall_now := fast_falling and not is_on_floor()
+	if fast_fall_now != _fast_fall_on:
+		_fast_fall_on = fast_fall_now
+		fast_fall_changed.emit(fast_fall_now)
 	_update_visuals()
 
 
@@ -91,6 +104,9 @@ func respawn(spot: Vector3) -> void:
 	heading = Vector3.FORWARD
 	velocity = heading * speed
 	_was_on_floor = false
+	if _fast_fall_on:
+		_fast_fall_on = false
+		fast_fall_changed.emit(false)
 
 
 func _move_on_ground(delta: float, wish: Vector3) -> void:
@@ -139,14 +155,29 @@ func _move_in_air(delta: float, wish: Vector3) -> void:
 	velocity.z = heading.z * flat_speed
 
 
-## Keeps the part of the velocity that goes along the ground.
-func _land() -> void:
+## Landing with [param before] (the velocity just before touching the ground):
+## keeps the part along the ground, and turns part of the speed into the ground
+## (the impact) into forward speed: all of [member Movement.landing_convert]
+## on a downhill slope of [member Movement.landing_full_slope], half on flat
+## ground, none on a rising slope as steep. Never keeps less than
+## [member Movement.landing_min_keep] of the horizontal speed.
+func _land(before: Vector3) -> void:
+	var m := movement
 	var n := get_floor_normal()
-	var along := velocity - n * velocity.dot(n)
-	speed = minf(along.length() * movement.landing_keep, movement.max_speed)
+	var impact := maxf(-before.dot(n), 0.0)
+	var along := before - n * before.dot(n)
 	var flat := Vector3(along.x, 0.0, along.z)
 	if flat.length() > 0.1:
 		heading = flat.normalized()
+	# How much the ground goes down along the heading (sine of the slope).
+	var dir := (heading - n * heading.dot(n)).normalized()
+	var downhill := Vector3.DOWN.dot(dir)
+	var share := clampf(0.5 + 0.5 * downhill / sin(deg_to_rad(m.landing_full_slope)), 0.0, 1.0)
+	var new_speed := along.length() * m.landing_keep + impact * m.landing_convert * share
+	var before_flat := Vector2(before.x, before.z).length()
+	new_speed = maxf(new_speed, before_flat * m.landing_min_keep)
+	speed = minf(new_speed, m.max_speed)
+	landed.emit(impact, speed / maxf(before.length(), 0.1))
 
 
 func _update_visuals() -> void:

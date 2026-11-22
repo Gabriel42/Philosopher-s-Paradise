@@ -26,6 +26,38 @@ What was tested, and how.
   hitting a rock kept the speed counter high (now speed drops to what's left).
 - Not checked: how it feels with a real player and the mouse (Gabriel).
 
+## 2026-11-22 – Landing keeps speed + landing / fast-fall effects
+- Before the change (temporary probe, 40 s scripted run on the real level,
+  jumping every 1.5 s, fast-falling every other jump): real landings lost
+  23–32% of total speed (e.g. 34.1 m/s in the air → 23.2 m/s); the fall speed
+  was all thrown away.
+- After: same probe, 146 landings, average 99% of total speed kept; fast fall
+  onto downhill gains (37 → 42 m/s); worst landings (rising slopes) hit the
+  floor of 75% of horizontal speed (36.4 → 27.3). The scripted run now reaches
+  ~100 m/s (was ~50): speeds build much more, tuning is Gabriel's call.
+- Test suite: 22 passed, 0 failed. New `player/test_landing` on flat and 20°
+  floors, checked against hand maths: flat 20/20 m/s → 25 (24..27), downhill
+  20° → ≈31.6 (29..34) and more than the total before, uphill 20° → 15 (75%),
+  `landing_convert = 0` and `landing_min_keep = 0` give the old landing (20),
+  fast_fall_changed sends true then false, a hard landing leaves dust + ring,
+  a tiny hop leaves nothing.
+- Found: on a 20° rising slope the runner leaves the floor every other frame
+  (one-frame "landings" with ~0.5 m/s impact); harmless, effects ignore
+  impacts under 4 m/s.
+- Screenshots in a window (`--screen 1`, temporary SceneTree script): dust +
+  orange slam ring on a slow fast-fall landing, cyan ring on good landings at
+  38 and 46 m/s; fast fall shows the stretched, glowing body and speed lines.
+  Fixed after the first shots: trail dots covered the view behind the runner
+  (removed, replaced by the glow), effects left in the world were out of view
+  at speed (the ring now follows the runner), speed lines thinner.
+- Not checked: how the squash and the camera shake feel in motion, and the
+  feel of the new landing with a real player (Gabriel).
+
+## 2026-11-22 – Esc quits the game
+- Game in a window (`--screen 1`, temporary SceneTree script) sent an Esc key
+  press at frame 60: the game quit at frame 61, exit code 0.
+- Test suite: 22 passed, 0 failed (tests don't use player input).
+
 ## 2026-11-22 – Runner model (blocky human) + free models to compare
 - `scenes/player/runner_model.tscn`: blocky human built from Godot shapes
   (head with visor, chest, hips, arms with shoulder/elbow joints, legs with
@@ -71,3 +103,7 @@ What was tested, and how.
   run is capped at 2.5x from 17.5 m/s up), landing has no animation.
 - The other compared models (KayKit Rogue, Kenney Blocky and Animated, Male
   Base Mesh) were deleted afterwards; nothing referenced them.
+- After merging main (landing keeps speed + effects): suite 25 passed, 0
+  failed. The runner now lands on the slope with speed kept (3.7 m/s at frame
+  60 with no input), so the idle check calls the model directly. Game run
+  300 frames in a window: no errors.

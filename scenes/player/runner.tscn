@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/runner.gd" id="1_runner"]
 [ext_resource type="Resource" path="res://resources/movement.tres" id="2_movement"]
-[ext_resource type="PackedScene" path="res://scenes/player/runner_model.tscn" id="3_model"]
+[ext_resource type="Script" path="res://scenes/player/runner_effects.gd" id="3_effects"]
+[ext_resource type="PackedScene" path="res://scenes/player/runner_model.tscn" id="4_model"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.4
@@ -21,7 +22,7 @@ movement = ExtResource("2_movement")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("Shape_body")
 
-[node name="Model" parent="." instance=ExtResource("3_model")]
+[node name="Model" parent="." instance=ExtResource("4_model")]
 
 [node name="CameraPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
@@ -44,3 +45,8 @@ offset_right = 420.0
 offset_bottom = 60.0
 mouse_filter = 2
 label_settings = SubResource("Label_speed")
+
+[node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("model", "camera")]
+script = ExtResource("3_effects")
+model = NodePath("../Model")
+camera = NodePath("../CameraPivot/SpringArm3D/Camera3D")

@@ -16,7 +16,14 @@
 ?
 
 ## Movement
-? (speeds, slopes, landing, jump, fast fall, abilities)
+? (speeds, slopes, jump, abilities)
+- Landing keeps your speed along the ground and turns part of your fall into
+  forward speed: the most on a downhill slope, half on flat ground, none on a
+  rising slope. You always keep at least ~75% of your horizontal speed.
+- Fast fall into a downhill slope is how you gain speed.
+- Effects show it: dust and a ring at the feet on landing (bright ring when you
+  kept your speed, orange after a fast fall), a squash, a shake on hard
+  landings; while fast falling the body stretches and glows, speed lines rush past.
 
 ## Runs and levels
 - A level is an endless strip of floating ground (80 m wide) that goes downhill, with rolling hills, small bumps and ramps (a kicker, then a downhill landing). Falling off the sides puts you back ahead with half your speed.
@@ -28,4 +35,4 @@
 ?
 
 ## Controls
-- Keyboard: WASD move, Space jump, Shift fast fall (placeholder). Mouse / gamepad: ?
+- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits. Mouse / gamepad: ?

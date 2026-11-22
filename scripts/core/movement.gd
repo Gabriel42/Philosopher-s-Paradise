@@ -44,6 +44,15 @@ extends Resource
 ## Landing along a downhill slope keeps your speed; landing flat loses the
 ## falling part.
 @export_range(0.0, 1.0) var landing_keep := 1.0
+## Part of the fall speed (the speed into the ground) turned into ground
+## speed when landing on a downhill slope of [member landing_full_slope] or
+## steeper. Flat ground gives half of it, a rising slope as steep gives none.
+@export_range(0.0, 1.0) var landing_convert := 0.5
+## Slope (degrees, going down your way) that gives all of [member landing_convert].
+@export_range(1.0, 60.0) var landing_full_slope := 20.0
+## A landing never leaves you with less than this part of the horizontal
+## speed you had just before it.
+@export_range(0.0, 1.0) var landing_min_keep := 0.75
 ## Part of the speed kept after falling off the world.
 @export_range(0.0, 1.0) var respawn_keep := 0.5
 
