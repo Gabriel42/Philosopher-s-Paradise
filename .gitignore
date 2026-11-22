@@ -1,0 +1,8 @@
+# Godot 4+ cache and imported files (regenerated automatically)
+.godot/
+/android/
+
+# Exports
+/build/
+*.exe
+*.pck
