@@ -2,6 +2,10 @@
 
 Newest first.
 
+- 2026-11-23 (7849f13): Start screen to tick which enemy types appear (game paused, choice remembered), to test each enemy alone.
+
+- 2026-11-23 (7849f13): enemy2: 6 orange capsules that keep beside the runner, match its speed and shoot at it; debug panel open at start with enemy2 shots fired / hit.
+
 - 2026-11-22 (d236f5f): Esc quits the game.
 
 - 2026-11-22 (d236f5f): Landing keeps speed (part of the fall turns into forward speed, more downhill; at least 75% kept) and landing / fast-fall effects (dust, ring, squash, shake; stretch, glow, speed lines).
