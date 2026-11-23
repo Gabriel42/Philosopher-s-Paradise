@@ -54,7 +54,10 @@
   never-repeating spiral and the group looks like a loose wavy flock. They appear
   ahead of you and come back ahead when you pass them. Out of reach on the
   ground: you hit one only by jumping into it. Touching one is only counted.
-- Runs: ?
+- Runs: a run is cut by **checkpoints** (how far apart, and what they look
+  like: ?). At each one the run pauses: first the philosophy report, then
+  the philosophy editor (see *Ideas and philosophies*). Between checkpoints
+  you only run.
 
 ## Attacks
 - Like in survivor games, attacks are automatic: no button, each fires on its
@@ -63,8 +66,10 @@
   keep up at any speed.
 - Enemies have health (3 for now) and die from attacks; a killed enemy
   appears ahead again (counted in the debug panel).
-- For testing, one attack at a time, swapped with the mouse wheel. The 10
-  placeholder attacks:
+- In the game the runner has **several attacks at once**; each one is an
+  idea it was given (see *Ideas and philosophies*). For testing, for now,
+  one attack at a time, swapped with the mouse wheel. The 10 placeholder
+  attacks:
   1. **Spark Bolt**: a fast, slightly homing bolt at the closest enemy, often.
   2. **Arc Chain**: instant lightning that jumps from enemy to enemy (5).
   3. **Orbit Stones**: 4 stones circling you, hitting what runs into them.
@@ -75,7 +80,65 @@
   8. **Glaive**: a disc thrown at an enemy that comes back, hitting both ways.
   9. **Shard Fan**: 5 shards in a fan, each going through 2 enemies.
   10. **Vortex**: a well on the closest group that pulls them in and hurts over time.
-- Which attacks the game keeps, and how you get or upgrade them: ?
+- Which attacks the game keeps: ? You get them as ideas.
+
+## Ideas and philosophies
+The main mechanic. **You never pick your upgrades.** Your philosophy picks
+them for you, by rules you wrote. Inspired by FF12's gambits (an ordered
+list of "if this, then that" rules that play for you), but here the rules
+decide what you become, not what you do in a fight. Our own names, never
+FF12's.
+
+### Terms
+- **Idea**: an upgrade. An attack, a stat or movement boost, or a boost to
+  the philosophy itself (see *Ideas about the philosophy*).
+- **Philosophy**: your ordered list of **rules**. Each rule says which idea
+  to take when you get a choice.
+
+### Tags
+Every idea has tags. They mean nothing on their own: rules read them to
+choose. One tag per category:
+- **Color**: red, blue, green, gold, violet... (list: ?)
+- **School**: Stoicism, Existentialism, Cynicism, Epicureanism, Nihilism,
+  Absurdism, Skepticism, Utilitarianism... (list: ?)
+- **Stance**: Aggressive or Passive.
+- Other categories tied to philosophy (era, branch such as ethics or
+  logic...): ?
+- Bonuses for holding many ideas with the same tag: ? (later)
+
+### How an idea is picked
+1. During the run you earn an **idea reward** (when: ?, e.g. every N kills).
+2. The game draws some **candidate** ideas (3 at first).
+3. The philosophy reads its rules from the top. The first rule that matches
+   a candidate takes it. You get it at once. Nothing stops the run.
+4. If no rule matches: ? (a random candidate, or nothing).
+- A rule is a **condition** plus what it takes. Conditions read the
+  candidates' tags and the state of the run: ideas already held, speed,
+  health, enemies near...
+- Examples: "if I'm hurt, take a Passive idea"; "take an idea of the school
+  I hold most"; "take a red idea"; "take an Aggressive idea"; "otherwise,
+  take a random one".
+- At first you have few rule slots and only simple conditions.
+
+### Ideas about the philosophy
+Some ideas improve the philosophy itself. Your philosophy picks them like
+any other, so a philosophy that values them grows faster. For example:
+- **More rules**: one more rule slot.
+- **Better options**: new kinds of conditions to write rules with
+  (examples: ?).
+- **More idea rewards**: each idea reward gives one more idea.
+- Maybe **more candidates** to choose from per reward: ?
+
+### Checkpoints
+At each checkpoint the run pauses:
+1. **Report**: every choice the philosophy made since the last checkpoint,
+   in order. For each one: the candidates, the idea taken, and **why**: which
+   rule took it, what that rule saw (the tag or the state that matched), and
+   why the rules above it didn't match.
+2. **Editor**: you edit the philosophy: add, remove and reorder rules, turn
+   them on or off, within the slots and options you have. Then the run goes
+   on.
+- The starting philosophy before the first checkpoint: ?
 
 ## Setting and art
 ?
