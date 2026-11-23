@@ -353,6 +353,47 @@ What was tested, and how.
   20 enemies, panel "enemy1: off", "enemy2: off", "enemy3: 20 out", 60 FPS,
   blue flyers spread over the strip. Saved choice deleted afterwards.
 
+## 2026-11-23 – Runner attacks (10, automatic, mouse-wheel swap)
+- `--import` clean, `--quit-after 300` headless with no errors. Test suite:
+  107 passed, 0 failed. New `player/test_attacks` (22 tests): enemy damage /
+  kill / sent ahead / generation, capsule distance, dead targets; each of the
+  10 attacks kills enemies placed in front of a still runner (Arc Chain kills
+  3 in a chain, Lance 3 in a line, Starfall not before its 0.8 s fall, Vortex
+  pulls two enemies 4 m apart to < 3 m and kills both in ~1.25 s, Glaive
+  comes back); aims at the closest, skips enemies passed (6 m behind), no
+  shot with nobody in reach, hits a flyer, Spark Bolt still kills from a
+  runner going 40 m/s, shots follow the origin shift, turning off clears
+  shots; the scene has 10 different attacks, one on at a time; wheel down /
+  up swaps and wraps (index 1, then 0, then 9), label shows "10/10".
+- Real game in a window (temporary script, runner holding forward, all 3
+  enemy types, start screen skipped), each attack on for ~1–5 s with a
+  screenshot: all 10 fire and kill (e.g. Pulse 25, Vortex 24, Orbit Stones 22,
+  Lance 11, Arc Chain 10 kills), 54–60 FPS. Found and fixed: (1) attacks aimed
+  behind the runner at enemies already passed: now skipped
+  (`ignore_behind`, 2 m); (2) fast shots passed through enemies (~1.9 m per
+  frame at speed): hits are now swept along the path each frame. A trace of
+  18 Spark Bolts then showed all 18 hitting.
+- The 2nd monitor wasn't connected this time (`--screen 1` out of range), so
+  the window opened on the main one.
+- Not checked: how the attacks feel and look while playing (Gabriel); the
+  mouse wheel with a real mouse (tested by sending the wheel events).
+
+## 2026-11-23 – Attacks checkbox on the start screen
+- Test suite: 114 passed, 0 failed. New: picker without attacks has no
+  checkbox; the checkbox is ticked by default, unticking turns every attack
+  off and hides the label, ticking turns the current one back on; "off" is
+  remembered by the next picker; the attack last used (swapped during the
+  run) is the one the next run starts with; the main scene's picker has the
+  checkbox wired to `Runner/Attacks`; debug panel shows "Attack: Spark Bolt
+  (0 fired, 0 kills)", then "Attack: off"; disabled attacks ignore the wheel
+  and kill nothing in 0.5 s, then kill again once enabled.
+- Game in a window (temporary script; `user://enemy_picker.cfg` backed up
+  and restored afterwards): the start screen shows "Runner / Attacks (mouse
+  wheel swaps)" under the enemy types; unticked and started, a 4 s run had
+  no attack label, panel "Attack: off", 0 kills, and the file saved
+  `[attacks] enabled=false index=0`.
+- Not checked: clicking the checkbox with the real mouse (set from the script).
+
 ## 2026-11-23 – Floating platforms (20 shapes, after ramps)
 - Previews: `scenes/debug/platform_preview.tscn` in a window builds all 20
   shapes and saved 20 numbered shots + an overview to

@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/player/attacks/player_attacks.gd" id="1_attacks"]
+[ext_resource type="Script" path="res://scenes/player/attacks/spark_bolt.gd" id="2_s"]
+[ext_resource type="Resource" path="res://resources/attacks/spark_bolt.tres" id="2_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/arc_chain.gd" id="3_s"]
+[ext_resource type="Resource" path="res://resources/attacks/arc_chain.tres" id="3_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/orbit_stones.gd" id="4_s"]
+[ext_resource type="Resource" path="res://resources/attacks/orbit_stones.tres" id="4_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/pulse.gd" id="5_s"]
+[ext_resource type="Resource" path="res://resources/attacks/pulse.tres" id="5_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/lance.gd" id="6_s"]
+[ext_resource type="Resource" path="res://resources/attacks/lance.tres" id="6_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/seekers.gd" id="7_s"]
+[ext_resource type="Resource" path="res://resources/attacks/seekers.tres" id="7_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/starfall.gd" id="8_s"]
+[ext_resource type="Resource" path="res://resources/attacks/starfall.tres" id="8_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/glaive.gd" id="9_s"]
+[ext_resource type="Resource" path="res://resources/attacks/glaive.tres" id="9_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/shard_fan.gd" id="10_s"]
+[ext_resource type="Resource" path="res://resources/attacks/shard_fan.tres" id="10_r"]
+[ext_resource type="Script" path="res://scenes/player/attacks/vortex.gd" id="11_s"]
+[ext_resource type="Resource" path="res://resources/attacks/vortex.tres" id="11_r"]
+
+[sub_resource type="LabelSettings" id="Label_attack"]
+font_size = 22
+outline_size = 6
+outline_color = Color(0, 0, 0, 0.6)
+
+[node name="Attacks" type="Node3D"]
+script = ExtResource("1_attacks")
+
+[node name="SparkBolt" type="Node3D" parent="."]
+script = ExtResource("2_s")
+settings = ExtResource("2_r")
+
+[node name="ArcChain" type="Node3D" parent="."]
+script = ExtResource("3_s")
+settings = ExtResource("3_r")
+
+[node name="OrbitStones" type="Node3D" parent="."]
+script = ExtResource("4_s")
+settings = ExtResource("4_r")
+
+[node name="Pulse" type="Node3D" parent="."]
+script = ExtResource("5_s")
+settings = ExtResource("5_r")
+
+[node name="Lance" type="Node3D" parent="."]
+script = ExtResource("6_s")
+settings = ExtResource("6_r")
+
+[node name="Seekers" type="Node3D" parent="."]
+script = ExtResource("7_s")
+settings = ExtResource("7_r")
+
+[node name="Starfall" type="Node3D" parent="."]
+script = ExtResource("8_s")
+settings = ExtResource("8_r")
+
+[node name="Glaive" type="Node3D" parent="."]
+script = ExtResource("9_s")
+settings = ExtResource("9_r")
+
+[node name="ShardFan" type="Node3D" parent="."]
+script = ExtResource("10_s")
+settings = ExtResource("10_r")
+
+[node name="Vortex" type="Node3D" parent="."]
+script = ExtResource("11_s")
+settings = ExtResource("11_r")
+
+[node name="Hud" type="CanvasLayer" parent="."]
+
+[node name="AttackName" type="Label" parent="Hud"]
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 720.0
+offset_bottom = 96.0
+mouse_filter = 2
+label_settings = SubResource("Label_attack")

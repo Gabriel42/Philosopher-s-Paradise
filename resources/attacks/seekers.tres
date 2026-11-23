@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_i5for"]
+
+[resource]
+script = ExtResource("1_i5for")
+display_name = "Seekers"
+damage = 3.0
+cooldown = 1.4
+reach = 40.0
+count = 3
+speed = 30.0
+size = 0.3
+area = 1.5
+duration = 3.0
+turn_rate = 6.0
+color = Color(1, 0.55, 0.15, 1)

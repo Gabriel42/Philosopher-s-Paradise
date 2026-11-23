@@ -2,6 +2,8 @@
 
 Newest first.
 
+- 2026-11-23 (add51d2, merged into main): Runner attacks: 10 automatic attacks aimed at the closest enemies ahead (Spark Bolt, Arc Chain, Orbit Stones, Pulse, Lance, Seekers, Starfall, Glaive, Shard Fan, Vortex), one at a time, mouse wheel swaps; enemies have health and die; start screen checkbox to turn attacks off.
+
 - 2026-11-23 (d20f42e, merged into main): enemy3: 20 blue flyers that sway and bob forward on their own, a few metres up; touches counted.
 
 - 2026-11-23 (7849f13): Start screen to tick which enemy types appear (game paused, choice remembered), to test each enemy alone.

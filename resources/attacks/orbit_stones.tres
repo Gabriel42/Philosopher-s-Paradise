@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_mdquj"]
+
+[resource]
+script = ExtResource("1_mdquj")
+display_name = "Orbit Stones"
+damage = 3.0
+cooldown = 0.5
+count = 4
+speed = 1.0
+size = 0.45
+area = 3.0
+color = Color(0.8, 0.7, 0.55, 1)

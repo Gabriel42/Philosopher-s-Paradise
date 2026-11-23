@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_2x3me"]
+
+[resource]
+script = ExtResource("1_2x3me")
+display_name = "Glaive"
+damage = 3.0
+cooldown = 1.6
+reach = 22.0
+speed = 45.0
+size = 0.6
+duration = 3.0
+color = Color(0.6, 1, 0.4, 1)

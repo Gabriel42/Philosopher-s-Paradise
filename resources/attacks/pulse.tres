@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_wjf5s"]
+
+[resource]
+script = ExtResource("1_wjf5s")
+display_name = "Pulse"
+damage = 3.0
+cooldown = 1.5
+area = 7.0
+color = Color(1, 0.45, 0.85, 1)

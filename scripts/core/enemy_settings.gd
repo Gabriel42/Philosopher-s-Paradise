@@ -25,6 +25,8 @@ extends Resource
 ## crowd keeps its spacing better, but costs more).
 @export_range(1, 8) var spacing_passes := 3
 @export var color := Color(0.85, 0.08, 0.08)
+## Damage an enemy takes before it dies (see [member AttackSettings.damage]).
+@export var health := 3.0
 
 @export_group("Speed")
 ## Seconds from an enemy appearing to it reaching the runner. At spawn each

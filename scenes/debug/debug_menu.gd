@@ -2,11 +2,14 @@ class_name DebugMenu
 extends CanvasLayer
 ## Debug panel, shown at start (see [member start_visible]) and toggled with
 ## F3 (action "toggle_debug"): for each enemy type how many are out and how
-## many times they touched the runner, shots fired / hit for types that shoot
-## ([EnemyFlankers]), and the frame rate.
+## many times they touched the runner and how many attacks killed, shots
+## fired / hit for types that shoot ([EnemyFlankers]), the runner's current
+## attack, and the frame rate.
 
 ## Every enemy type to show (one [EnemySwarm] per type).
 @export var swarms: Array[EnemySwarm] = []
+## The runner's attacks (shows the current one). Optional.
+@export var attacks: PlayerAttacks
 ## Whether the panel is open when the game starts.
 @export var start_visible := true
 
@@ -41,10 +44,17 @@ func panel_text() -> String:
 		if not swarm.active:
 			lines.append("%s: off" % kind)
 			continue
-		lines.append("%s: %d out, %d touches" % [kind, swarm.positions.size(), swarm.touches])
+		lines.append("%s: %d out, %d touches, %d kills" % [
+				kind, swarm.positions.size(), swarm.touches, swarm.kills])
 		if swarm is EnemyFlankers:
 			var flankers := swarm as EnemyFlankers
 			lines.append("%s shots: %d fired / %d hit" % [
 					kind.left(1).to_upper() + kind.substr(1), flankers.shots_fired, flankers.shots_hit])
+	if attacks != null and not attacks.enabled:
+		lines.append("Attack: off")
+	elif attacks != null and attacks.current() != null:
+		var attack := attacks.current()
+		lines.append("Attack: %s (%d fired, %d kills)" % [
+				attack.settings.display_name, attack.fired, attack.kills])
 	lines.append("FPS: %d" % roundi(Engine.get_frames_per_second()))
 	return "\n".join(lines)

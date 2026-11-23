@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_bynh0"]
+
+[resource]
+script = ExtResource("1_bynh0")
+display_name = "Lance"
+damage = 4.0
+cooldown = 1.2
+reach = 35.0
+size = 0.5
+color = Color(0.75, 1, 1, 1)
