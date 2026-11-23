@@ -211,3 +211,19 @@ What was tested, and how.
   while the runner was stuck on a rock; not reproduced.
 - Not checked: how dodging feels with a real player (Gabriel); enemies pass
   through rocks and pillars and glide over ramps (by design, no physics).
+
+## 2026-11-23 – Enemies reach the runner 3 s after appearing
+- Math: time to meet = gap / closing speed, so closing = gap / 3 s. Before
+  (spawn 120–240 m, 0.8 × runner speed): 27–55 s at 22 m/s, 10–20 s at
+  60 m/s. Now each enemy gets closing = gap / `meet_time` at spawn and runs at
+  the runner's forward speed minus it; spawn 45–60 m gives 15–20 m/s.
+- Test suite: 46 passed, 0 failed. Changed/new in `enemy/test_enemy_swarm`:
+  runs 15 m/s slower than a 30 m/s runner and stays 15 slower when it goes to
+  50; sent ahead of a steady runner it reaches it in 3 ± 0.1 s at 22 m/s and
+  at 60 m/s; a recycled enemy's closing speed is its distance / 3 (± 0.01).
+- Game in a window (`--screen 1`, temporary SceneTree script holding forward,
+  15 s, 40 enemies, runner 27–35 m/s): 116 enemies reached the runner after
+  min 2.78, median 3.00, max 3.10 s. Screenshots: capsules crowd around and
+  behind the runner.
+- Not checked: whether enemies visibly pop in at 45–60 m (fog 0.003 only hides
+  ~15% at that distance; can't tell from a still), and how it feels (Gabriel).

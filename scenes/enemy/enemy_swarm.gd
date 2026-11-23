@@ -5,8 +5,9 @@ extends Node3D
 ## [MultiMeshInstance3D] that draws every capsule in one go, and a fixed pool
 ## (an enemy left behind is sent ahead again, nothing is created or freed
 ## during a run).
-## Enemies appear ahead of the runner, run downhill (-Z) at
-## [member EnemySettings.speed_ratio] of its speed, and move sideways toward
+## Enemies appear ahead of the runner and run downhill (-Z) a fixed amount
+## slower than it (their closing speed, set at spawn so they reach it
+## [member EnemySettings.meet_time] seconds later), and move sideways toward
 ## where the runner will be when they meet. They follow the ground with
 ## [method TerrainHeight.height_at] (no collisions: they pass through rocks).
 ## Lives under the [EndlessLevel]: positions are in the level's shifted space.
@@ -27,6 +28,8 @@ const _STRIDE := 12
 var positions := PackedVector3Array()
 ## Speed down the strip (m/s) of each enemy.
 var speeds := PackedFloat32Array()
+## How much slower than the runner (m/s down the strip) each enemy runs.
+var closings := PackedFloat32Array()
 ## Sideways speed (m/s along X) of each enemy.
 var side_speeds := PackedFloat32Array()
 ## 1 while an enemy touches the runner (a touch counts once).
@@ -85,7 +88,6 @@ func _physics_process(delta: float) -> void:
 func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	var s := settings
 	_fit_count(runner_pos, runner_vel)
-	var target := Vector2(runner_vel.x, runner_vel.z).length() * s.speed_ratio
 	var runner_forward := maxf(-runner_vel.z, 0.0)
 	var half := level.settings.width * 0.5 - s.edge_margin
 	var origin := level.origin
@@ -94,6 +96,7 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	var high := -Vector3.INF
 	for i in positions.size():
 		var p := positions[i]
+		var target := runner_forward - closings[i]
 		var speed := move_toward(speeds[i], target, s.acceleration * delta)
 		speeds[i] = speed
 		p.z -= speed * delta
@@ -112,7 +115,7 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 		positions[i] = p
 		_check_touch(i, p, runner_pos)
 		if p.z > runner_pos.z + s.recycle_distance:
-			_spawn(i, runner_pos, target)
+			_spawn(i, runner_pos, runner_forward)
 		var b := i * _STRIDE
 		p = positions[i]
 		_buffer[b + 3] = p.x
@@ -139,8 +142,10 @@ func _check_touch(i: int, p: Vector3, runner_pos: Vector3) -> void:
 	touching[i] = 1 if overlap else 0
 
 
-## Puts enemy [param i] ahead of the runner, running at [param speed].
-func _spawn(i: int, runner_pos: Vector3, speed: float) -> void:
+## Puts enemy [param i] ahead of the runner (going [param runner_forward] m/s
+## down the strip), with the closing speed that reaches it
+## [member EnemySettings.meet_time] seconds later.
+func _spawn(i: int, runner_pos: Vector3, runner_forward: float) -> void:
 	var s := settings
 	var half := level.settings.width * 0.5 - s.edge_margin
 	var p := Vector3(_rng.randf_range(-half, half), 0.0, 0.0)
@@ -148,7 +153,8 @@ func _spawn(i: int, runner_pos: Vector3, speed: float) -> void:
 	var origin := level.origin
 	p.y = level.terrain.height_at(p.x + origin.x, p.z + origin.z) - origin.y
 	positions[i] = p
-	speeds[i] = speed
+	closings[i] = (runner_pos.z - p.z) / maxf(s.meet_time, 0.01)
+	speeds[i] = runner_forward - closings[i]
 	side_speeds[i] = 0.0
 	touching[i] = 0
 
@@ -162,11 +168,12 @@ func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
 		return
 	positions.resize(count)
 	speeds.resize(count)
+	closings.resize(count)
 	side_speeds.resize(count)
 	touching.resize(count)
-	var speed := Vector2(runner_vel.x, runner_vel.z).length() * settings.speed_ratio
+	var runner_forward := maxf(-runner_vel.z, 0.0)
 	for i in range(old, count):
-		_spawn(i, runner_pos, speed)
+		_spawn(i, runner_pos, runner_forward)
 	_buffer.resize(count * _STRIDE)
 	for i in count:
 		var b := i * _STRIDE

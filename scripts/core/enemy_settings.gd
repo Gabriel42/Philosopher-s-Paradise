@@ -1,8 +1,8 @@
 class_name EnemySettings
 extends Resource
 ## Every number of the enemies (resources/enemy.tres).
-## Enemies appear ahead of the runner, run downhill a little slower than it,
-## and move sideways to cut it off. Speeds in m/s, accelerations in m/s².
+## Enemies appear ahead of the runner, close in so they reach it about
+## [member meet_time] seconds later, and move sideways to cut it off. Speeds in m/s, accelerations in m/s².
 
 ## How many enemies are out at once (can be changed while playing).
 @export_range(0, 5000) var count := 40
@@ -16,9 +16,11 @@ extends Resource
 @export var color := Color(0.85, 0.08, 0.08)
 
 @export_group("Speed")
-## Part of the runner's speed an enemy tries to run at (below 1: the runner
-## catches up, so they meet).
-@export_range(0.0, 2.0) var speed_ratio := 0.8
+## Seconds from an enemy appearing to it reaching the runner. At spawn each
+## enemy gets a closing speed (its distance ahead / this), then runs at the
+## runner's forward speed minus it, so the timing holds when the runner
+## speeds up or slows down (a runner slower than that is charged uphill).
+@export_range(0.5, 20.0) var meet_time := 3.0
 ## How fast an enemy gets to that speed (a sudden boost leaves it behind).
 @export var acceleration := 20.0
 
@@ -32,9 +34,9 @@ extends Resource
 
 @export_group("Spawning")
 ## Enemies appear at least this far ahead of the runner...
-@export var spawn_distance := 120.0
+@export var spawn_distance := 45.0
 ## ...plus a random distance up to this, so they don't all come at once.
-@export var spawn_spread := 120.0
+@export var spawn_spread := 15.0
 ## An enemy this far behind the runner is sent ahead again.
 @export var recycle_distance := 20.0
 ## Enemies keep this far from the sides of the strip.

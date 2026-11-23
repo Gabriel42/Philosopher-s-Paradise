@@ -36,9 +36,10 @@
 - A level is an endless strip of floating ground (80 m wide) that goes downhill, with rolling hills, small bumps and ramps (a kicker, then a downhill landing). Falling off the sides puts you back ahead with half your speed.
 - Rocks and pillars are scattered on it; hitting one stops you.
 - Each level comes from a seed: the same seed gives the same ground.
-- Enemies (placeholder: small red capsules) appear ahead and run downhill a
-  little slower than you (they match a share of your speed), moving sideways to
-  cut you off; you dodge them. Touching one does nothing yet (only counted).
+- Enemies (placeholder: small red capsules) appear 45–60 m ahead and close in
+  so they reach you about 3 s after appearing, however fast you go (they run
+  a fixed amount slower than you, charging uphill if you're slow), moving
+  sideways to cut you off; you dodge them. Touching one does nothing yet (only counted).
 - Runs: ?
 
 ## Setting and art

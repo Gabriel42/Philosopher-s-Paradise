@@ -1,5 +1,5 @@
 extends TestCase
-## Enemies: speed matching, interception, dodging, touches, recycling,
+## Enemies: closing speed (3 s to meet), interception, dodging, touches, recycling,
 ## origin shift, live count. Moves a pretend runner by hand and calls
 ## EnemySwarm.step() at 60 Hz (no physics, no Runner).
 
@@ -21,11 +21,13 @@ func before_each() -> void:
 	swarm.set_physics_process(false)
 
 
-## Puts enemy 0 at [param x], [param distance] forward, running at [param speed].
-func _place(x: float, distance: float, speed: float) -> void:
+## Puts enemy 0 at [param x], [param distance] forward, running at [param speed],
+## [param closing] m/s slower than the runner.
+func _place(x: float, distance: float, speed: float, closing := 6.0) -> void:
 	swarm.step(0.0, level.surface_point(0.0, 0.0), Vector3.ZERO)  # fills the pool
 	swarm.positions[0] = level.surface_point(x, distance)
 	swarm.speeds[0] = speed
+	swarm.closings[0] = closing
 
 
 ## Runs a runner from ([param x], [param distance]) at [param vel] for
@@ -38,16 +40,42 @@ func _run(x: float, distance: float, vel: Vector3, seconds: float) -> Vector3:
 	return pos
 
 
-func test_runs_at_its_share_of_the_runner_speed() -> void:
-	_place(30.0, 200.0, 0.0)
-	_run(-30.0, 0.0, Vector3(0, 0, -30), 3.0)
-	assert_near(swarm.speeds[0], 30.0 * 0.8, 0.01)
+func test_runs_its_closing_speed_slower_than_the_runner() -> void:
+	_place(30.0, 300.0, 0.0, 15.0)
+	var pos := _run(-30.0, 0.0, Vector3(0, 0, -30), 3.0)
+	assert_near(swarm.speeds[0], 30.0 - 15.0, 0.01)
+	_run(pos.x, -pos.z, Vector3(0, 0, -50), 3.0)  # the runner speeds up
+	assert_near(swarm.speeds[0], 50.0 - 15.0, 0.01)
+
+
+## Sends enemy 0 ahead of a runner going straight at [param speed], then
+## returns how many seconds it takes to reach the runner (down the strip).
+func _time_to_meet(speed: float) -> float:
+	var vel := Vector3(0, 0, -speed)
+	_place(0.0, 0.0, 0.0)
+	swarm.positions[0] = level.surface_point(0.0, -25.0)  # left behind...
+	var pos := level.surface_point(0.0, 0.0)
+	swarm.step(DT, pos, vel)  # ...so it is sent ahead
+	var frames := 0
+	while swarm.positions[0].z < pos.z and frames < 600:
+		pos = level.surface_point(pos.x, -(pos.z + vel.z * DT))
+		swarm.step(DT, pos, vel)
+		frames += 1
+	return frames * DT
+
+
+func test_reaches_a_runner_at_run_speed_3_s_after_appearing() -> void:
+	assert_near(_time_to_meet(22.0), 3.0, 0.1)
+
+
+func test_reaches_a_fast_runner_3_s_after_appearing() -> void:
+	assert_near(_time_to_meet(60.0), 3.0, 0.1)
 
 
 func test_a_sudden_boost_leaves_it_behind() -> void:
 	_place(30.0, 300.0, 24.0)
 	var pos := _run(-30.0, 0.0, Vector3(0, 0, -60), 0.25)
-	# 20 m/s² for 0.25 s: 24 -> 29, far from the 48 it wants.
+	# 20 m/s² for 0.25 s: 24 -> 29, far from the 54 it wants.
 	assert_near(swarm.speeds[0], 29.0, 0.1)
 	assert_true(pos.z < 0.0)
 
@@ -87,10 +115,9 @@ func test_a_late_sidestep_dodges() -> void:
 
 
 func test_a_touch_counts_once() -> void:
-	swarm.settings.speed_ratio = 1.0
 	var sent: Array[int] = []
 	swarm.runner_touched.connect(func(total: int) -> void: sent.append(total))
-	_place(0.3, 0.0, 20.0)
+	_place(0.3, 0.0, 20.0, 0.0)
 	var pos := _run(0.0, 0.0, Vector3(0, 0, -20), 0.5)  # running side by side
 	assert_eq(swarm.touches, 1)
 	swarm.positions[0].x += 5.0  # apart...
@@ -114,7 +141,8 @@ func test_left_behind_goes_ahead_again() -> void:
 	var ahead := -swarm.positions[0].z - 100.0
 	var s := swarm.settings
 	assert_between(ahead, s.spawn_distance - 1.0, s.spawn_distance + s.spawn_spread + 1.0)
-	assert_near(swarm.speeds[0], 24.0, 0.01)
+	assert_near(swarm.closings[0], ahead / s.meet_time, 0.01)
+	assert_near(swarm.speeds[0], 30.0 - swarm.closings[0], 0.01)
 
 
 func test_origin_shift_keeps_enemies_in_place() -> void:
