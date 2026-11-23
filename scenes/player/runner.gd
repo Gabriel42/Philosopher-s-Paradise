@@ -5,7 +5,8 @@ extends CharacterBody3D
 ## the speed along the ground and turns part of the fall into forward speed
 ## (more on a downhill slope), see [method _land].
 ## Every number is in [member movement].
-## The mouse turns the camera (click to capture it). Esc quits the game.
+## The camera is fixed, looking north down the course (the mouse doesn't turn
+## it; it stays captured, click to capture it again). Esc quits the game.
 ## Effects listen to [signal landed] and [signal fast_fall_changed].
 
 ## Sent when touching the ground. [param impact]: speed into the ground (m/s);
@@ -31,8 +32,6 @@ var heading := Vector3.FORWARD
 ## from left / right, see [member Movement.air_side_speed]. 0 on the ground.
 var air_side := 0.0
 
-var _yaw := 0.0
-var _pitch := -0.25
 var _was_on_floor := false
 var _fast_fall_on := false
 
@@ -56,11 +55,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not use_player_input:
 		return
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var motion := event as InputEventMouseMotion
-		_yaw -= motion.relative.x * movement.mouse_sensitivity
-		_pitch = clampf(_pitch - motion.relative.y * movement.mouse_sensitivity, -1.3, 0.6)
-	elif event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 	elif event is InputEventMouseButton and event.pressed:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -71,7 +66,7 @@ func _physics_process(delta: float) -> void:
 		move_input = Input.get_vector("move_left", "move_right", "move_back", "move_forward")
 		wants_jump = Input.is_action_just_pressed("jump")
 		fast_falling = Input.is_action_pressed("fast_fall")
-	_pivot.rotation = Vector3(_pitch, _yaw, 0.0)
+	_pivot.rotation = Vector3(movement.camera_pitch, 0.0, 0.0)
 
 	var forward := -_pivot.global_basis.z
 	forward.y = 0.0

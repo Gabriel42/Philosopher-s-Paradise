@@ -56,8 +56,8 @@ scenes/level/     endless_level.tscn + .gd (EndlessLevel): keeps chunks around
                   terrain_chunk.gd (TerrainChunk): one chunk: ground mesh with
                   hanging sides, collision, rocks and pillars (none under
                   platforms)
-scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
-                  camera with mouse look, speed label)
+scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (fixed
+                  follow camera looking north, no mouse look; speed label)
                   runner_model.tscn + .gd (RunnerModel): Mannequiny model,
                   picks idle / run / jump animations, skydive in the air,
                   tucked roll on fast fall

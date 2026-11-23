@@ -62,7 +62,9 @@ extends Resource
 @export_range(0.0, 1.0) var respawn_keep := 0.5
 
 @export_group("Camera")
-@export var mouse_sensitivity := 0.003
+## Fixed camera tilt (radians, negative = looking down). The camera always
+## looks north, down the course; the mouse doesn't turn it.
+@export_range(-1.3, 0.6) var camera_pitch := -0.25
 @export var camera_distance := 5.0
 ## Camera distance and field of view at max speed (they grow with speed).
 @export var camera_distance_fast := 8.0

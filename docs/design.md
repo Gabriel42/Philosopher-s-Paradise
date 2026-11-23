@@ -87,4 +87,4 @@
 ?
 
 ## Controls
-- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, the **setup screen** picks which enemy types appear (for testing; Enter starts), and whether the runner attacks at all (the run starts with the attack last used). R during a run goes back to the setup screen (the run starts over). Mouse wheel swaps the attack (for testing). Mouse / gamepad: ?
+- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, the **setup screen** picks which enemy types appear (for testing; Enter starts), and whether the runner attacks at all (the run starts with the attack last used). R during a run goes back to the setup screen (the run starts over). Mouse wheel swaps the attack (for testing). The mouse does not move the camera: it stays fixed behind the runner, looking north down the course (tilt in `movement.tres`, `camera_pitch`). Gamepad: ?

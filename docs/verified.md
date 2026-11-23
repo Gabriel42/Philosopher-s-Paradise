@@ -476,3 +476,13 @@ What was tested, and how.
   forward + right): runner turned and slid right, banked 30°, tip -97° to
   -105° while falling.
 - Not checked: how it feels in play (Gabriel).
+
+## 2026-11-23 – No mouse look (fixed camera)
+- Removed mouse-motion camera turning from `runner.gd` and
+  `mouse_sensitivity` from `Movement`; the camera pivot is set every physics
+  frame to (`movement.camera_pitch`, 0, 0): looking north, tilted −0.25 rad
+  as before. `camera_pitch` is a new export (Camera group).
+- New test `test_mouse_motion_does_not_turn_the_camera` (sends a 400×200 px
+  mouse motion with player input on, camera rotation unchanged). Full suite:
+  130 passed, 0 failed.
+- Not checked: how it feels to play with the fixed camera (Gabriel).
