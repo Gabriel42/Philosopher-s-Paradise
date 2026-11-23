@@ -38,6 +38,11 @@ extends Resource
 @export var air_turn_rate := 1.2
 ## Speeding up in the air while under run_speed.
 @export var air_accel := 8.0
+## Sideways speed that left / right give in the air (m/s), on top of the
+## turning: the runner slides sideways while keeping its forward speed.
+@export var air_side_speed := 14.0
+## How fast that sideways speed comes and goes (m/s²).
+@export var air_side_accel := 45.0
 
 @export_group("Landing")
 ## Part of the speed along the ground kept when landing (1 = all of it).
@@ -57,7 +62,9 @@ extends Resource
 @export_range(0.0, 1.0) var respawn_keep := 0.5
 
 @export_group("Camera")
-@export var mouse_sensitivity := 0.003
+## Fixed camera tilt (radians, negative = looking down). The camera always
+## looks north, down the course; the mouse doesn't turn it.
+@export_range(-1.3, 0.6) var camera_pitch := -0.25
 @export var camera_distance := 5.0
 ## Camera distance and field of view at max speed (they grow with speed).
 @export var camera_distance_fast := 8.0

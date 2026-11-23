@@ -4,7 +4,8 @@ extends Node3D
 ## animations. [Runner] calls [method animate] every physics frame; this only
 ## shows the state, it never changes movement.
 ## In the air (after [member skydive_delay]) the body tips forward into a
-## skydive pose. Fast fall (the parent [Runner]'s
+## flying pose (arms swept back), its head pointing where it goes (up or
+## down, [method fly]) and banking with the sideways slide. Fast fall (the parent [Runner]'s
 ## [signal Runner.fast_fall_changed]) starts a tucked forward roll that opens
 ## back into the skydive. The poses are made in code by [RunnerPose].
 ## Landing goes straight back into the run: the body snaps upright and the
@@ -47,10 +48,21 @@ extends Node3D
 @export var climb_pace := 0.3
 
 @export_group("Skydive")
-## Time in the air before the skydive starts (s), so small hops stay hops.
+## Time in the air before the flying pose starts (s), so small hops stay hops.
 @export var skydive_delay := 0.15
-## How far the body tips forward in the skydive (degrees; 90 = belly flat).
-@export var skydive_angle := 75.0
+## How far the body tips forward when flying level (degrees; 90 = belly flat,
+## head forward). The climb angle is added on top, see [member pitch_follow].
+@export var skydive_angle := 90.0
+## Part of the climb angle (where the runner is going, up or down) the body
+## follows: 1 = the head points exactly where it goes.
+@export_range(0.0, 1.0) var pitch_follow := 0.7
+## Most the body points its head up / down from level (degrees).
+@export var max_pitch_up := 45.0
+@export var max_pitch_down := 50.0
+## Roll to the side at full sideways slide (degrees; right side down going right).
+@export var max_bank := 30.0
+## How fast the bank follows the slide (degrees/s).
+@export var bank_speed := 150.0
 ## Time to blend into or out of a pose (s).
 @export var pose_blend := 0.15
 ## How fast the body tips into the skydive or back upright (degrees/s).
@@ -59,17 +71,18 @@ extends Node3D
 @export var turn_height := 0.95
 ## Bone turns of the skydive (degrees around the model's axes: x to its left,
 ## y up, z forward), see [RunnerPose].
+## The flying pose: arms swept back along the body, legs together.
 @export var skydive_pose: Dictionary[String, Vector3] = {
-	"spine_02": Vector3(-15, 0, 0),
-	"neck_01": Vector3(-45, 0, 0),
-	"upperarm.l": Vector3(0, 0, 80),
-	"upperarm.r": Vector3(0, 0, -80),
-	"lowerarm.l": Vector3(0, 0, 80),
-	"lowerarm.r": Vector3(0, 0, -80),
-	"thigh.l": Vector3(0, 0, 15),
-	"thigh.r": Vector3(0, 0, -15),
-	"calf.l": Vector3(60, 0, 0),
-	"calf.r": Vector3(60, 0, 0),
+	"spine_02": Vector3(-10, 0, 0),
+	"neck_01": Vector3(-55, 0, 0),
+	"upperarm.l": Vector3(15, 0, -17),
+	"upperarm.r": Vector3(15, 0, 17),
+	"lowerarm.l": Vector3(15, 0, 20),
+	"lowerarm.r": Vector3(15, 0, -20),
+	"thigh.l": Vector3(0, 0, -3),
+	"thigh.r": Vector3(0, 0, 3),
+	"calf.l": Vector3(15, 0, 0),
+	"calf.r": Vector3(15, 0, 0),
 }
 
 @export_group("Roll")
@@ -105,6 +118,12 @@ var _tip := 0.0
 var _slope := 0.0
 ## Lean into the slope now (degrees, positive = forward), around the feet.
 var _lean := 0.0
+## Climb angle of the runner's motion (degrees, positive going up), from [method fly].
+var _climb := 0.0
+## Sideways slide, -1 (left) .. 1 (right), from [method fly].
+var _side := 0.0
+## Roll to the side now (degrees, positive = right side down).
+var _bank := 0.0
 ## Bends the bones into the skydive and the tuck (made in [method _ready]).
 var _pose: RunnerPose
 
@@ -144,6 +163,7 @@ func _process(delta: float) -> void:
 		# before that the body just rights itself.
 		_finishing = _tip < -90.0
 	var airborne := not _on_floor and _air_time >= skydive_delay
+	var fly_tip := flight_tip()
 	var tuck := 0.0
 	if _finishing:
 		# Tucked, forward to the next upright (-360° is upright again).
@@ -156,14 +176,14 @@ func _process(delta: float) -> void:
 		_roll_t += delta
 		var t := clampf(_roll_t / roll_time, 0.0, 1.0)
 		# One full turn forward, easing in and out, ending in the skydive.
-		_tip = lerpf(_roll_from, -360.0 - skydive_angle, ease(t, -1.6))
+		_tip = lerpf(_roll_from, -360.0 + fly_tip, ease(t, -1.6))
 		# Tucks in fast, opens up near the end.
 		tuck = minf(clampf(t / 0.15, 0.0, 1.0), clampf((1.0 - t) / 0.25, 0.0, 1.0))
 		if t >= 1.0:
 			_rolling = false
-			_tip = -skydive_angle
+			_tip = fly_tip
 	else:
-		var target := -skydive_angle if airborne else 0.0
+		var target := fly_tip if airborne else 0.0
 		# Back to -180..180 first, so a half-done roll doesn't unwind.
 		var speed := land_tip_speed if _on_floor else tip_speed
 		_tip = move_toward(wrapf(_tip, -180.0, 180.0), target, speed * delta)
@@ -175,12 +195,38 @@ func _process(delta: float) -> void:
 	if not airborne and not _rolling and not _finishing:
 		lean_target = clampf(_slope * lean_per_degree, -max_lean_down, max_lean_up)
 	_lean = move_toward(_lean, lean_target, lean_speed * delta)
-	# Tip (air, roll) turns around the middle of the body; lean around the feet.
+	var bank_target := clampf(_side, -1.0, 1.0) * max_bank if airborne or _rolling else 0.0
+	var bank_rate := land_tip_speed if _on_floor else bank_speed
+	_bank = move_toward(_bank, bank_target, bank_rate * delta)
+	# Tip (air, roll) and bank (around the way it goes, outside the tip) turn
+	# around the middle of the body; lean around the feet.
 	var pivot := Vector3.UP * turn_height
 	var turn := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(_tip)), Vector3.ZERO)
+	var bank := Transform3D(Basis(Vector3.FORWARD, deg_to_rad(_bank)), Vector3.ZERO)
 	var lean := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-_lean)), Vector3.ZERO)
-	_body.transform = lean * Transform3D(Basis(), pivot) * turn \
+	_body.transform = lean * Transform3D(Basis(), pivot) * bank * turn \
 			* Transform3D(Basis(), -pivot) * _body_base
+
+
+## Tells where the runner is going: [param climb] is the angle of its motion
+## (degrees, positive going up), [param side] its sideways slide in the air
+## (-1 left .. 1 right). The flying body points with the climb and banks with
+## the slide.
+func fly(climb: float, side: float) -> void:
+	_climb = climb
+	_side = side
+
+
+## Tip of the flying body for the climb now (degrees, negative = head forward):
+## [member skydive_angle] when level, head up going up, down going down.
+func flight_tip() -> float:
+	var pitch := clampf(_climb * pitch_follow, -max_pitch_down, max_pitch_up)
+	return -skydive_angle + pitch
+
+
+## Roll to the side (degrees, positive = right side down; for tests).
+func bank() -> float:
+	return _bank
 
 
 func _on_fast_fall_changed(on: bool) -> void:

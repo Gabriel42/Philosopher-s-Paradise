@@ -448,3 +448,41 @@ What was tested, and how.
   open, game paused, mouse visible, runner back at the start (z −5). The
   screenshot showed the setup screen with the saved choice ticked.
 - Not checked: how the denser platforms feel to play (Gabriel).
+
+## 2026-11-23 – Side air control, flying pose, pitch and bank in the air
+- Movement: new `air_side_speed` (14 m/s) and `air_side_accel` (45 m/s²).
+  Left / right in the air add a sideways slide (`Runner.air_side`, from
+  `move_input.x`, so turning toward the key doesn't weaken it) on top of the
+  existing turn; the forward speed stays separate. 0 on the ground.
+- Model: `skydive_angle` 75 → 90 (flat), plus `pitch_follow` (0.7),
+  `max_pitch_up` (45), `max_pitch_down` (50), `max_bank` (30), `bank_speed`
+  (150°/s); new `fly(climb, side)` called by the runner every frame. The bank
+  turns around the travel axis, outside the tip. New `skydive_pose`: arms
+  swept back along the sides, legs together.
+- Test suite: 129 passed, 0 failed. New: `player/test_landing`
+  `test_left_right_slides_sideways_in_the_air` (from 20 m holding right:
+  14 m/s sideways after 0.5 s, moved > 4 m right, forward speed kept, slide
+  back to 0 when let go, 0 after landing); `player/test_runner_model`
+  `test_flying_body_points_where_it_goes` (level -90°, up 30° → -69°, down
+  45° → -121.5°, down 89° capped at -140°) and
+  `test_flying_body_banks_with_the_slide` (+30° right, -30° left, 0 on the
+  ground). The two tests that expected -75° now compare to `flight_tip()`;
+  after a fast-fall roll the body is head down (falling fast).
+- Screenshots (`--screen 1`, temporary SceneTree scripts, removed): the model
+  alone from the side, above and behind, level / climbing 30° / diving 45° /
+  banked. Took three tries on the arms: the idle pose under it is an A-pose
+  with bent elbows, so the arms first looked like a "W"; now they lie along
+  the sides reaching to the hips. In the real game (scripted run, jump, then
+  forward + right): runner turned and slid right, banked 30°, tip -97° to
+  -105° while falling.
+- Not checked: how it feels in play (Gabriel).
+
+## 2026-11-23 – No mouse look (fixed camera)
+- Removed mouse-motion camera turning from `runner.gd` and
+  `mouse_sensitivity` from `Movement`; the camera pivot is set every physics
+  frame to (`movement.camera_pitch`, 0, 0): looking north, tilted −0.25 rad
+  as before. `camera_pitch` is a new export (Camera group).
+- New test `test_mouse_motion_does_not_turn_the_camera` (sends a 400×200 px
+  mouse motion with player input on, camera rotation unchanged). Full suite:
+  130 passed, 0 failed.
+- Not checked: how it feels to play with the fixed camera (Gabriel).

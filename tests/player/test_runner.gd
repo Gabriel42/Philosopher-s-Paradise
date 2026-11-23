@@ -93,9 +93,26 @@ func test_model_skydives_in_the_air_only() -> void:
 	await get_tree().create_timer(0.45).timeout
 	assert_false(runner.is_on_floor(), "in the air")
 	assert_near(model.pose_amount(), 1.0, 0.01, "skydive pose")
-	assert_near(model.tip(), -model.skydive_angle, 0.1, "tipped forward")
+	assert_near(model.tip(), model.flight_tip(), 3.0, "tipped forward, following the climb")
 	while not runner.is_on_floor():
 		await _wait(1)
 	await get_tree().create_timer(0.3).timeout
 	assert_near(model.pose_amount(), 0.0, 0.01, "pose gone after landing")
 	assert_near(model.tip(), 0.0, 0.1, "upright after landing")
+
+
+func test_mouse_motion_does_not_turn_the_camera() -> void:
+	runner.use_player_input = true
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	await _wait(5)
+	var pivot: Node3D = runner.get_node("CameraPivot")
+	var before := pivot.rotation
+	var motion := InputEventMouseMotion.new()
+	motion.relative = Vector2(400.0, 200.0)
+	runner._unhandled_input(motion)
+	await _wait(5)
+	runner.use_player_input = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	assert_near(pivot.rotation, before, 0.0001, "camera unchanged")
+	assert_near(pivot.rotation, Vector3(runner.movement.camera_pitch, 0.0, 0.0), 0.0001,
+			"fixed angle")
