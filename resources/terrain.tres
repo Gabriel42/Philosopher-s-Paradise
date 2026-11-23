@@ -26,3 +26,6 @@
 [resource]
 script = ExtResource("1_terrain")
 platforms = Array[ExtResource("2_shape")]([ExtResource("p01"), ExtResource("p02"), ExtResource("p03"), ExtResource("p04"), ExtResource("p05"), ExtResource("p06"), ExtResource("p07"), ExtResource("p08"), ExtResource("p09"), ExtResource("p10"), ExtResource("p11"), ExtResource("p12"), ExtResource("p13"), ExtResource("p14"), ExtResource("p15"), ExtResource("p16"), ExtResource("p17"), ExtResource("p18"), ExtResource("p19"), ExtResource("p20")])
+ramp_chance = 0.8
+platform_chance = 1.0
+platform_tries = 20

@@ -429,3 +429,22 @@ What was tested, and how.
 - Not checked: how reaching them feels with a real player steering and
   jumping (Gabriel); `--screen 1` fell back to the main monitor (Godot saw
   only one screen).
+
+## 2026-11-23 – More frequent platforms, setup screen, R goes back to it
+- Platform rate (temporary script, 5 seeds × 200 chunks, the real
+  `terrain.tres`): before (ramp_chance 0.6, platform_chance 0.7, 6 tries)
+  29% of chunks had a platform. With platform_chance 1.0, a third of ramps
+  still got none (no shape fit), so tries went up too: ramp 0.8 / platform
+  1.0 / 6 tries 55%, 12 tries 60%, **20 tries 65%** (kept, set in
+  `terrain.tres`; defaults unchanged, so tests are unaffected).
+- Renamed EnemyPicker to SetupScreen (`scenes/menu/setup_screen.*`, test
+  `menu/test_setup_screen`); save file still `user://enemy_picker.cfg`.
+- Test suite: 126 passed, 0 failed. New: R (physical key) sends
+  `back_requested` only while the setup screen is closed, not on key
+  repeat; the main scene connects it to itself.
+- Game in a window (`--screen 1`, temporary autoload): setup screen open and
+  paused at start; after Start and 3 s of running, a real R key event
+  (`Input.parse_input_event`) reloaded the scene: new Main, setup screen
+  open, game paused, mouse visible, runner back at the start (z −5). The
+  screenshot showed the setup screen with the saved choice ticked.
+- Not checked: how the denser platforms feel to play (Gabriel).

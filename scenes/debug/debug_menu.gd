@@ -19,7 +19,7 @@ extends CanvasLayer
 
 func _ready() -> void:
 	_panel.visible = start_visible
-	# Keeps updating while the game is paused (e.g. behind the start screen).
+	# Keeps updating while the game is paused (e.g. behind the setup screen).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 

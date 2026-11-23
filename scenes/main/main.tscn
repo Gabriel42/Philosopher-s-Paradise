@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/debug/debug_menu.tscn" id="6_debug"]
 [ext_resource type="Script" path="res://scenes/enemy/enemy_flankers.gd" id="7_flankers"]
 [ext_resource type="Resource" path="res://resources/enemies/enemy2.tres" id="8_enemy2"]
-[ext_resource type="PackedScene" path="res://scenes/menu/enemy_picker.tscn" id="9_picker"]
+[ext_resource type="PackedScene" path="res://scenes/menu/setup_screen.tscn" id="9_setup"]
 [ext_resource type="Resource" path="res://resources/enemies/enemy3.tres" id="10_enemy3"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
@@ -62,6 +62,6 @@ runner = NodePath("../Runner")
 swarms = [NodePath("../EndlessLevel/Enemy1"), NodePath("../EndlessLevel/Enemy2"), NodePath("../EndlessLevel/Enemy3")]
 attacks = NodePath("../EndlessLevel/Runner/Attacks")
 
-[node name="EnemyPicker" parent="." node_paths=PackedStringArray("level", "attacks") instance=ExtResource("9_picker")]
+[node name="SetupScreen" parent="." node_paths=PackedStringArray("level", "attacks") instance=ExtResource("9_setup")]
 level = NodePath("../EndlessLevel")
 attacks = NodePath("../EndlessLevel/Runner/Attacks")

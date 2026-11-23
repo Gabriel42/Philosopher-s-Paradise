@@ -7,10 +7,10 @@ Developer: Gabriel.
 
 ## Working rules (always follow)
 
-1. **Never start a task until Gabriel approves it.** Propose a short plan first
-   (what you'll change, which files, any assumptions), then wait for a clear "go".
-   Small follow-up fixes inside an approved task are fine; anything beyond its
-   scope needs a new approval.
+1. **Start working right away** on what Gabriel asks; no plan or "go" needed.
+   Only propose a plan and wait for his "go" when he says "make a plan and
+   wait for my go", or when his input is needed on an important question
+   (then ask it before going further).
 2. **Always verify.** Don't assume code works: run it in Godot (see Testing).
    Check calculations and any facts you look up (Godot APIs, versions) against
    official sources such as docs.godotengine.org. Say what you verified and how.
@@ -26,14 +26,14 @@ Developer: Gabriel.
 | File | Owner | What it is |
 |---|---|---|
 | `CLAUDE.md` | shared | Working rules, conventions, testing (this file) |
-| `docs/design.md` | Gabriel; Claude proposes edits, applies once approved | Current game rules, the source of truth |
+| `docs/design.md` | Gabriel; Claude edits it when a task changes the rules (and says what changed) | Current game rules, the source of truth |
 | `docs/notes.md` | **Gabriel only** | His thoughts, direction, how he wants to proceed |
-| `docs/TODO.md` | Gabriel; Claude edits anything when asked, and on its own only adds `(Claude)` items to *Ideas* / *Bugs* and moves items to *Now* (approved) and to `docs/done.md` (verified) | Work list: Now / Next / Later / Ideas / Bugs |
+| `docs/TODO.md` | Gabriel; Claude edits anything when asked, and on its own only adds `(Claude)` items to *Ideas* / *Bugs* and moves items to *Now* (started) and to `docs/done.md` (verified) | Work list: Now / Next / Later / Ideas / Bugs |
 | `docs/done.md` | Gabriel; Claude appends verified tasks (newest first, with the date and commit) | Finished tasks. Not imported here; read it only when needed |
 | `docs/verified.md` | Claude | What was tested and how; update after each verified task |
 
-When a task changes the game's rules or feel, propose the matching
-`docs/design.md` edit in the plan. Read `docs/verified.md` before testing a feature.
+When a task changes the game's rules or feel, update
+`docs/design.md` to match and say so. Read `docs/verified.md` before testing a feature.
 
 @docs/design.md
 
@@ -93,11 +93,13 @@ scenes/debug/     debug_menu.tscn + .gd (DebugMenu): debug panel, open at
                   platform_preview.tscn + .gd: builds every platform in
                   resources/platforms/ and saves a numbered screenshot of
                   each to docs/previews/platforms/ (needs a window)
-scenes/menu/      enemy_picker.tscn + .gd (EnemyPicker): start screen, game
-                  paused, one checkbox per enemy type (EnemySwarm.active),
-                  "Attacks" checkbox (PlayerAttacks.enabled, + attack last
-                  used), choice saved in user://enemy_picker.cfg; skipped
-                  headless
+scenes/menu/      setup_screen.tscn + .gd (SetupScreen): the setup screen,
+                  game paused, one checkbox per enemy type
+                  (EnemySwarm.active), "Attacks" checkbox
+                  (PlayerAttacks.enabled, + attack last used), choice saved
+                  in user://enemy_picker.cfg (old name kept); skipped
+                  headless; R during a run sends back_requested and
+                  main.gd reloads the scene, which reopens it
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -135,7 +137,7 @@ tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   level/test_endless_level, level/test_platforms, player/test_runner, player/test_landing,
                   player/test_runner_model, enemy/test_enemy_swarm,
                   enemy/test_enemy_flankers, debug/test_debug_menu,
-                  menu/test_enemy_picker, player/test_attacks
+                  menu/test_setup_screen, player/test_attacks
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in
@@ -149,8 +151,8 @@ A script that belongs to one scene lives next to it; shared scripts go in
 - **3D units: 1 unit = 1 metre.** Up is `+Y`, forward is `-Z` (Godot's
   convention: `-basis.z` is where a node looks).
 - Inputs: `move_forward/back/left/right` (WASD), `jump` (Space), `fast_fall`
-  (Shift), `toggle_debug` (F3), `attack_next` / `attack_prev` (mouse wheel
-  down / up). Gamepad to add with the player.
+  (Shift), `toggle_debug` (F3), `back_to_setup` (R), `attack_next` /
+  `attack_prev` (mouse wheel down / up). Gamepad to add with the player.
 - Placeholder geometry is CSG (`CSGBox3D`... with `use_collision`). Fine to
   block out levels; bake to meshes (or replace with real art) once a level is
   kept, since CSG is slow when it changes at runtime.
