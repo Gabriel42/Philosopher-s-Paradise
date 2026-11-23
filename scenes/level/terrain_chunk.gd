@@ -16,8 +16,9 @@ static var _obstacle_material: StandardMaterial3D
 
 
 ## Builds the chunk [param chunk_index] from [param terrain], placed for the
-## world [param origin] (see [member EndlessLevel.origin]).
-func build(chunk_index: int, terrain: TerrainHeight, origin: Vector3) -> void:
+## world [param origin] (see [member EndlessLevel.origin]). No obstacles go
+## under or on the platforms of [param platform_layout].
+func build(chunk_index: int, terrain: TerrainHeight, origin: Vector3, platform_layout: PlatformLayout = null) -> void:
 	index = chunk_index
 	name = "Chunk%d" % index
 	var s := terrain.settings
@@ -32,7 +33,7 @@ func build(chunk_index: int, terrain: TerrainHeight, origin: Vector3) -> void:
 	collision.shape = shape
 	body.add_child(collision)
 	add_child(body)
-	_build_obstacles(terrain)
+	_build_obstacles(terrain, platform_layout)
 
 
 ## Position (in the level's space) of the ground grid's vertex [param ix], [param iz].
@@ -122,8 +123,9 @@ func _build_ground(terrain: TerrainHeight) -> PackedVector3Array:
 	return faces
 
 
-## Scatters rocks and pillars (never on a ramp or at the very start).
-func _build_obstacles(terrain: TerrainHeight) -> void:
+## Scatters rocks and pillars (never on a ramp, at the very start or under
+## a platform).
+func _build_obstacles(terrain: TerrainHeight, platform_layout: PlatformLayout) -> void:
 	var s := terrain.settings
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([s.terrain_seed, index, "obstacles"])
@@ -137,6 +139,8 @@ func _build_obstacles(terrain: TerrainHeight) -> void:
 		var turn := rng.randf_range(0.0, TAU)
 		var distance := index * s.chunk_length + along
 		if distance < s.start_smooth_distance or terrain.is_on_ramp(distance):
+			continue
+		if platform_layout != null and platform_layout.covers(x, distance):
 			continue
 		var ground := terrain.height_at(x, -distance)
 		var body := StaticBody3D.new()

@@ -22,12 +22,18 @@ var terrain: TerrainHeight
 var origin := Vector3.ZERO
 ## Chunk index -> chunk.
 var chunks: Dictionary[int, TerrainChunk] = {}
+## Where the floating platforms go.
+var platform_layout: PlatformLayout
+## Chunk index -> the platform after its ramp (null when it has none). A
+## platform stays until the runner is past its end, even when its chunk is gone.
+var platforms: Dictionary[int, Node3D] = {}
 
 
 func _ready() -> void:
 	if settings == null:
 		settings = TerrainSettings.new()
 	terrain = TerrainHeight.new(settings)
+	platform_layout = PlatformLayout.new(terrain)
 	if runner != null:
 		runner.global_position = surface_point(0.0, 5.0) + Vector3.UP * 1.0
 		update_chunks()
@@ -63,9 +69,36 @@ func update_chunks() -> void:
 	for index in range(first, last + 1):
 		if not chunks.has(index):
 			var chunk := TerrainChunk.new()
-			chunk.build(index, terrain, origin)
+			chunk.build(index, terrain, origin, platform_layout)
 			add_child(chunk)
 			chunks[index] = chunk
+	update_platforms(first, last)
+
+
+## Builds the platforms of the chunks [param first]..[param last] and frees
+## those the runner is past.
+func update_platforms(first: int, last: int) -> void:
+	var distance := runner_distance()
+	for index: int in platforms.keys():
+		var p := platform_layout.platform_of(index)
+		var passed: bool = index < first and (p.is_empty() or p.end < distance - settings.chunk_length)
+		if index > last or passed:
+			if platforms[index] != null:
+				platforms[index].queue_free()
+			platforms.erase(index)
+	for index in range(first, last + 1):
+		if platforms.has(index):
+			continue
+		var p := platform_layout.platform_of(index)
+		if p.is_empty():
+			platforms[index] = null
+			continue
+		var builder: PlatformBuilder = p.builder
+		var node := builder.build()
+		node.name = "Platform%d" % index
+		node.position = Vector3(p.x, p.top, -p.start) - origin
+		add_child(node)
+		platforms[index] = node
 
 
 ## Puts the runner back on the ground ahead if it fell too far below it.
@@ -91,5 +124,8 @@ func check_origin_shift() -> void:
 	origin += delta
 	for chunk: TerrainChunk in chunks.values():
 		chunk.position -= delta
+	for platform: Node3D in platforms.values():
+		if platform != null:
+			platform.position -= delta
 	runner.global_position -= delta
 	origin_shifted.emit(delta)
