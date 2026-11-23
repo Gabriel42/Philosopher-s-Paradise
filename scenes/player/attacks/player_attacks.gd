@@ -3,7 +3,7 @@ extends Node3D
 ## The runner's attacks (its [Attack] children). For testing them one by one,
 ## only one is on at a time: the mouse wheel swaps (actions "attack_next" and
 ## "attack_prev"), and a label at the top left names the current one.
-## [member enabled] off (start screen, [EnemyPicker]): no attack runs, no
+## [member enabled] off (setup screen, [SetupScreen]): no attack runs, no
 ## label, the wheel does nothing.
 ## Lives under the [Runner]; its parent's parent is the [EndlessLevel].
 

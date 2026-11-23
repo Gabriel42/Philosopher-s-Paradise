@@ -35,7 +35,7 @@
 ## Runs and levels
 - A level is an endless strip of floating ground (80 m wide) that goes downhill, with rolling hills, small bumps and ramps (a kicker, then a downhill landing). Falling off the sides puts you back ahead with half your speed.
 - Rocks and pillars are scattered on it; hitting one stops you.
-- Floating platforms: after some ramps, a long strip of floating ground runs north, starting just under the kicker's lip so its launch carries you onto it (too slow and you hit its front edge). 20 shapes (runway, slide, rail, S-curve, banked turn, twisting ribbon, half-pipe, rollers, stepping stones, broken bridge, spearhead, funnel, kicker, two decks, rocky plaza...). They never sink into the ground below.
+- Floating platforms: after most ramps (about 2 chunks in 3 have one), a long strip of floating ground runs north, starting just under the kicker's lip so its launch carries you onto it (too slow and you hit its front edge). 20 shapes (runway, slide, rail, S-curve, banked turn, twisting ribbon, half-pipe, rollers, stepping stones, broken bridge, spearhead, funnel, kicker, two decks, rocky plaza...). They never sink into the ground below.
 - Each level comes from a seed: the same seed gives the same ground.
 - Enemies. **enemy1** (placeholder: small red capsules) appear 45–60 m ahead and close in
   so they reach you about 3 s after appearing, however fast you go (they run
@@ -81,4 +81,4 @@
 ?
 
 ## Controls
-- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, a screen picks which enemy types appear (for testing; Enter starts), and whether the runner attacks at all (the run starts with the attack last used). Mouse wheel swaps the attack (for testing). Mouse / gamepad: ?
+- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, the **setup screen** picks which enemy types appear (for testing; Enter starts), and whether the runner attacks at all (the run starts with the attack last used). R during a run goes back to the setup screen (the run starts over). Mouse wheel swaps the attack (for testing). Mouse / gamepad: ?

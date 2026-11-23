@@ -39,7 +39,7 @@ const _HALF_NEIGHBOURS: Array[int] = [1, 0, -1, 1, 0, 1, 1, 1]
 @export var runner: Node3D
 ## Whether this enemy type is in the run. Off: the pool is emptied at once
 ## (nothing moves, nothing is drawn, no cost); back on, the enemies appear
-## ahead again at the next step. Set by the start screen ([EnemyPicker]).
+## ahead again at the next step. Set by the setup screen ([SetupScreen]).
 @export var active := true:
 	set(value):
 		active = value

@@ -1,6 +1,6 @@
-class_name EnemyPicker
+class_name SetupScreen
 extends CanvasLayer
-## Start screen for testing: one checkbox per enemy type (every [EnemySwarm]
+## Setup screen for testing: one checkbox per enemy type (every [EnemySwarm]
 ## under [member level]), and Start. While it is open the game is paused and
 ## the mouse is free; ticking or unticking a type turns it on or off at once
 ## ([member EnemySwarm.active]). The choice is saved (see [constant SAVE_PATH])
@@ -10,11 +10,16 @@ extends CanvasLayer
 ## ([member PlayerAttacks.enabled]); it is saved too, with the attack last
 ## used, which the next run starts with.
 ## Start (button or Enter) closes it and the run begins; Esc quits.
+## During the run, R (action "back_to_setup") sends [signal back_requested]:
+## the main scene reloads itself, which brings this screen back.
 
 ## Sent when the player presses Start.
 signal started
+## Sent when the player presses R during the run (screen closed).
+signal back_requested
 
 ## Where the last choice is kept (one bool per enemy type's display name).
+## Still named after the old "enemy picker" so saved choices carry over.
 const SAVE_PATH := "user://enemy_picker.cfg"
 
 ## The level whose enemy types are listed.
@@ -83,6 +88,9 @@ func is_open() -> bool:
 
 func _input(event: InputEvent) -> void:
 	if not is_open():
+		if event.is_action_pressed("back_to_setup") and not event.is_echo():
+			get_viewport().set_input_as_handled()
+			back_requested.emit()
 		return
 	var key := event as InputEventKey
 	if key != null and key.pressed and not key.echo \
