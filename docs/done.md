@@ -2,6 +2,10 @@
 
 Newest first.
 
+- 2026-11-23 (e45ae5b, merged into main): No mouse look: the camera stays fixed behind the runner, looking north down the course (tilt is `camera_pitch` in Movement).
+
+- 2026-11-23 (91d84af, merged into main): Side air control (left / right slide up to 14 m/s), flying pose that pitches with the climb and banks with the slide, tuck roll on fast fall, upright landing with no stomp; platform preview screenshots.
+
 - 2026-11-23 (9ad19d7, merged into main): Platforms more frequent (about 2 chunks in 3, was under 1 in 3); the start screen is now the setup screen; R during a run goes back to it (the run starts over).
 
 - 2026-11-23 (2e0c408, merged into main): Floating platforms: 20 shapes (runway, slide, rail, curves, banks, half-pipe, stepping stones, decks...) placed after some ramps, just under the lip so the kicker carries you on; never in the ground, no rocks under them.
