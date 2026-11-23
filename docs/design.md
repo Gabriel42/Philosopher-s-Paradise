@@ -55,8 +55,29 @@
   ground: you hit one only by jumping into it. Touching one is only counted.
 - Runs: ?
 
+## Attacks
+- Like in survivor games, attacks are automatic: no button, each fires on its
+  own cooldown at the closest enemies within its reach, ignoring the ones
+  already passed (more than 2 m behind). Shots move with the runner, so they
+  keep up at any speed.
+- Enemies have health (3 for now) and die from attacks; a killed enemy
+  appears ahead again (counted in the debug panel).
+- For testing, one attack at a time, swapped with the mouse wheel. The 10
+  placeholder attacks:
+  1. **Spark Bolt**: a fast, slightly homing bolt at the closest enemy, often.
+  2. **Arc Chain**: instant lightning that jumps from enemy to enemy (5).
+  3. **Orbit Stones**: 4 stones circling you, hitting what runs into them.
+  4. **Pulse**: a wave around you (7 m) when an enemy is that close.
+  5. **Lance**: an instant beam toward the closest, through everything in line.
+  6. **Seekers**: 3 homing missiles on different enemies, small blasts.
+  7. **Starfall**: a ring marks an enemy, a rock lands on it 0.8 s later (blast).
+  8. **Glaive**: a disc thrown at an enemy that comes back, hitting both ways.
+  9. **Shard Fan**: 5 shards in a fan, each going through 2 enemies.
+  10. **Vortex**: a well on the closest group that pulls them in and hurts over time.
+- Which attacks the game keeps, and how you get or upgrade them: ?
+
 ## Setting and art
 ?
 
 ## Controls
-- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, a screen picks which enemy types appear (for testing; Enter starts). Mouse / gamepad: ?
+- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, a screen picks which enemy types appear (for testing; Enter starts), and whether the runner attacks at all (the run starts with the attack last used). Mouse wheel swaps the attack (for testing). Mouse / gamepad: ?

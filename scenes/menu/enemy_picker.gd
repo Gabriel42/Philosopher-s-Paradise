@@ -6,6 +6,9 @@ extends CanvasLayer
 ## ([member EnemySwarm.active]). The choice is saved (see [constant SAVE_PATH])
 ## and ticked again next time; a type never seen before starts ticked. When
 ## the screen doesn't open, every type stays on.
+## Below, an "Attacks" checkbox turns the runner's attacks on or off
+## ([member PlayerAttacks.enabled]); it is saved too, with the attack last
+## used, which the next run starts with.
 ## Start (button or Enter) closes it and the run begins; Esc quits.
 
 ## Sent when the player presses Start.
@@ -16,6 +19,8 @@ const SAVE_PATH := "user://enemy_picker.cfg"
 
 ## The level whose enemy types are listed.
 @export var level: EndlessLevel
+## The runner's attacks (the "Attacks" checkbox). Optional.
+@export var attacks: PlayerAttacks
 ## Whether the screen opens when the game starts.
 @export var show_at_start := true
 ## Don't open in headless runs (tests, --quit-after checks), where nobody can
@@ -28,6 +33,8 @@ const SAVE_PATH := "user://enemy_picker.cfg"
 var swarms: Array[EnemySwarm] = []
 ## The checkbox of each type, in the same order.
 var boxes: Array[CheckBox] = []
+## The "Attacks" checkbox (null without [member attacks]).
+var attacks_box: CheckBox
 
 var _backdrop: ColorRect
 var _panel: PanelContainer
@@ -42,6 +49,8 @@ func _ready() -> void:
 	if show_at_start and not (skip_when_headless and DisplayServer.get_name() == "headless"):
 		_load_choice()
 		open()
+		if attacks != null:
+			attacks.attack_changed.connect(_on_attack_changed)
 	else:
 		_backdrop.visible = false
 		_panel.visible = false  # every type stays on (the saved choice is not used)
@@ -132,6 +141,19 @@ func _build() -> void:
 		var none := Label.new()
 		none.text = "(no enemy types in the level)"
 		column.add_child(none)
+	attacks_box = null
+	if attacks != null:
+		var heading := Label.new()
+		heading.text = "Runner"
+		heading.add_theme_font_size_override("font_size", 28)
+		column.add_child(heading)
+		attacks_box = CheckBox.new()
+		attacks_box.name = "Attacks"
+		attacks_box.text = "Attacks  (mouse wheel swaps)"
+		attacks_box.button_pressed = attacks.enabled
+		attacks_box.add_theme_font_size_override("font_size", 22)
+		attacks_box.toggled.connect(func(on: bool) -> void: attacks.enabled = on)
+		column.add_child(attacks_box)
 	_start = Button.new()
 	_start.name = "Start"
 	_start.text = "Start  (Enter)"
@@ -154,6 +176,11 @@ func _load_choice() -> void:
 		var on: bool = file.get_value("enemies", _name_of(swarms[i]), true)
 		boxes[i].button_pressed = on  # sends toggled: sets active
 		swarms[i].active = on
+	if attacks != null:
+		var enabled: bool = file.get_value("attacks", "enabled", true)
+		attacks_box.button_pressed = enabled
+		attacks.enabled = enabled
+		attacks.select(file.get_value("attacks", "index", attacks.index))
 
 
 func _save_choice() -> void:
@@ -161,4 +188,15 @@ func _save_choice() -> void:
 	file.load(save_path)  # keep types not in this level
 	for i in swarms.size():
 		file.set_value("enemies", _name_of(swarms[i]), boxes[i].button_pressed)
+	if attacks != null:
+		file.set_value("attacks", "enabled", attacks_box.button_pressed)
+		file.set_value("attacks", "index", attacks.index)
+	file.save(save_path)
+
+
+## Remembers the attack last used (swapped with the wheel during the run).
+func _on_attack_changed(index: int, _attack: Attack) -> void:
+	var file := ConfigFile.new()
+	file.load(save_path)
+	file.set_value("attacks", "index", index)
 	file.save(save_path)

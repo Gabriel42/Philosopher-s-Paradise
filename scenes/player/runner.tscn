@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/runner.gd" id="1_runner"]
 [ext_resource type="Resource" path="res://resources/movement.tres" id="2_movement"]
 [ext_resource type="Script" path="res://scenes/player/runner_effects.gd" id="3_effects"]
 [ext_resource type="PackedScene" path="res://scenes/player/runner_model.tscn" id="4_model"]
+[ext_resource type="PackedScene" path="res://scenes/player/attacks/player_attacks.tscn" id="5_attacks"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.4
@@ -49,3 +50,5 @@ label_settings = SubResource("Label_speed")
 [node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("3_effects")
 camera = NodePath("../CameraPivot/SpringArm3D/Camera3D")
+
+[node name="Attacks" parent="." instance=ExtResource("5_attacks")]

@@ -64,10 +64,20 @@ scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
                   blocky_model.tscn: first blocky human (not used)
                   runner_effects.gd (RunnerEffects): landing effects,
                   driven by the runner's signals
+                  attacks/: player_attacks.tscn + .gd (PlayerAttacks, under
+                  the Runner): the 10 attacks, one on at a time, mouse wheel
+                  swaps, name label; attack.gd (Attack): base of every
+                  attack (cooldown, closest targets, hurting, shots, flashes),
+                  one script per attack (spark_bolt, arc_chain, orbit_stones,
+                  pulse, lance, seekers, starfall, glaive, shard_fan, vortex);
+                  attack_view.gd (AttackView): draws spheres / bars / rings
+                  with MultiMeshes; attack_target.gd, attack_shot.gd
 scenes/enemy/     enemy_swarm.gd (EnemySwarm): every enemy, cheap: arrays of
                   numbers, a fixed pool, one MultiMesh draws them all, ground
                   height from TerrainHeight (no physics); spawns them ahead,
                   intercepts the runner, counts touches (runner_touched);
+                  health, damage() / kills (enemy_killed), group
+                  "enemy_swarms" so attacks find every type;
                   spacing shared by every type; _steer() is what a type
                   overrides to move its own way; flying types (enemy3) sway
                   and bob forward on their own
@@ -80,7 +90,9 @@ scenes/debug/     debug_menu.tscn + .gd (DebugMenu): debug panel, open at
                   FPS)
 scenes/menu/      enemy_picker.tscn + .gd (EnemyPicker): start screen, game
                   paused, one checkbox per enemy type (EnemySwarm.active),
-                  choice saved in user://enemy_picker.cfg; skipped headless
+                  "Attacks" checkbox (PlayerAttacks.enabled, + attack last
+                  used), choice saved in user://enemy_picker.cfg; skipped
+                  headless
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -90,11 +102,15 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
                   enemy type (each type is its own EnemySwarm node)
                   flanker_settings.gd (FlankerSettings, extends
                   EnemySettings): spot beside the runner, shots
+                  attack_settings.gd (AttackSettings): every number of one
+                  attack
 resources/        terrain.tres, movement.tres (Gabriel tweaks these)
                   enemies/: one EnemySettings per enemy type (enemy1.tres:
                   the red capsules, node Enemy1 in main.tscn; enemy2.tres:
                   the 6 orange shooters, node Enemy2; enemy3.tres: the blue
                   flyers, node Enemy3)
+                  attacks/: one AttackSettings per attack (same numbers as
+                  each script's default_settings(), which tests use)
 assets/           art/, audio/sfx/, audio/music/, fonts/
                   art/characters/mannequiny/: the runner model (CC-BY 4.0,
                   see CREDITS.md)
@@ -104,7 +120,7 @@ tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   level/test_endless_level, player/test_runner, player/test_landing,
                   player/test_runner_model, enemy/test_enemy_swarm,
                   enemy/test_enemy_flankers, debug/test_debug_menu,
-                  menu/test_enemy_picker
+                  menu/test_enemy_picker, player/test_attacks
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in
@@ -118,7 +134,8 @@ A script that belongs to one scene lives next to it; shared scripts go in
 - **3D units: 1 unit = 1 metre.** Up is `+Y`, forward is `-Z` (Godot's
   convention: `-basis.z` is where a node looks).
 - Inputs: `move_forward/back/left/right` (WASD), `jump` (Space), `fast_fall`
-  (Shift), `toggle_debug` (F3). Mouse look and gamepad to add with the player.
+  (Shift), `toggle_debug` (F3), `attack_next` / `attack_prev` (mouse wheel
+  down / up). Gamepad to add with the player.
 - Placeholder geometry is CSG (`CSGBox3D`... with `use_collision`). Fine to
   block out levels; bake to meshes (or replace with real art) once a level is
   kept, since CSG is slow when it changes at runtime.

@@ -31,6 +31,15 @@ func test_shows_every_enemy_type() -> void:
 	assert_true(menu.panel_text().contains("walker: off"), menu.panel_text())
 
 
+func test_shows_the_current_attack_or_off() -> void:
+	var main := keep(load("res://scenes/main/main.tscn").instantiate())
+	var menu := main.get_node("DebugMenu") as DebugMenu
+	var attacks := main.get_node("EndlessLevel/Runner/Attacks") as PlayerAttacks
+	assert_true(menu.panel_text().contains("Attack: Spark Bolt (0 fired, 0 kills)"), menu.panel_text())
+	attacks.enabled = false
+	assert_true(menu.panel_text().contains("Attack: off"), menu.panel_text())
+
+
 func test_main_scene_has_every_enemy_type() -> void:
 	var main := keep(load("res://scenes/main/main.tscn").instantiate())
 	await get_tree().process_frame
