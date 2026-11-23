@@ -51,9 +51,11 @@ scenes/main/      main.tscn + main.gd: entry scene (sky, sun, fog, the endless
 scenes/level/     endless_level.tscn + .gd (EndlessLevel): keeps chunks around
                   the runner (builds ahead, frees behind), shifts the world back
                   to the centre every 2 km (origin), respawns the runner ahead
-                  when it falls off
+                  when it falls off; builds the floating platforms and keeps
+                  each until the runner is past its end
                   terrain_chunk.gd (TerrainChunk): one chunk: ground mesh with
-                  hanging sides, collision, rocks and pillars
+                  hanging sides, collision, rocks and pillars (none under
+                  platforms)
 scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
                   camera with mouse look, speed label)
                   runner_model.tscn + .gd (RunnerModel): Mannequiny model,
@@ -88,6 +90,9 @@ scenes/enemy/     enemy_swarm.gd (EnemySwarm): every enemy, cheap: arrays of
 scenes/debug/     debug_menu.tscn + .gd (DebugMenu): debug panel, open at
                   start, F3 toggles (per enemy type: count, touches, shots;
                   FPS)
+                  platform_preview.tscn + .gd: builds every platform in
+                  resources/platforms/ and saves a numbered screenshot of
+                  each to docs/previews/platforms/ (needs a window)
 scenes/menu/      enemy_picker.tscn + .gd (EnemyPicker): start screen, game
                   paused, one checkbox per enemy type (EnemySwarm.active),
                   "Attacks" checkbox (PlayerAttacks.enabled, + attack last
@@ -97,6 +102,14 @@ scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
                   (downhill + hills + bumps + ramps), pure and seeded
+                  platform_shape.gd (PlatformShape): every number of one
+                  floating platform (length north, width, slope, curve,
+                  pieces, decks, kicker...)
+                  platform_builder.gd (PlatformBuilder): mesh, collision and
+                  rocks of a platform from its shape
+                  platform_layout.gd (PlatformLayout): where platforms go
+                  (one after some ramps, just under the lip, hull above the
+                  ground, never crossing another), pure and seeded
                   movement.gd (Movement): every number of the runner
                   enemy_settings.gd (EnemySettings): every number of one
                   enemy type (each type is its own EnemySwarm node)
@@ -105,6 +118,8 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
                   attack_settings.gd (AttackSettings): every number of one
                   attack
 resources/        terrain.tres, movement.tres (Gabriel tweaks these)
+                  platforms/: platform_01..20.tres, the PlatformShapes
+                  listed in terrain.tres (platforms)
                   enemies/: one EnemySettings per enemy type (enemy1.tres:
                   the red capsules, node Enemy1 in main.tscn; enemy2.tres:
                   the 6 orange shooters, node Enemy2; enemy3.tres: the blue
@@ -117,7 +132,7 @@ assets/           art/, audio/sfx/, audio/music/, fonts/
 tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
                   core/: test_project (main scene loads), test_terrain_height
-                  level/test_endless_level, player/test_runner, player/test_landing,
+                  level/test_endless_level, level/test_platforms, player/test_runner, player/test_landing,
                   player/test_runner_model, enemy/test_enemy_swarm,
                   enemy/test_enemy_flankers, debug/test_debug_menu,
                   menu/test_enemy_picker, player/test_attacks

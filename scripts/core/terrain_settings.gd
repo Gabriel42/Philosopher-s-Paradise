@@ -49,6 +49,26 @@ extends Resource
 @export_group("Obstacles")
 @export var obstacles_per_chunk := 5
 
+@export_group("Platforms")
+## Floating platforms that can follow a ramp (one is picked at random each
+## time). Empty = no platforms.
+@export var platforms: Array[PlatformShape] = []
+## Chance that a ramp has a platform after it.
+@export_range(0.0, 1.0) var platform_chance := 0.7
+## How far past the ramp's lip the platform starts (the kicker launches you
+## onto it).
+@export var platform_gap := 10.0
+## How far below the lip the platform's top starts.
+@export var platform_drop := 0.5
+## Space always kept between a platform's underside and the ground below.
+@export var platform_clearance := 1.5
+## Where the ground below is close, a platform's underside gets shallower,
+## down to this part of its depth; closer than that, the platform is skipped.
+@export_range(0.0, 1.0) var platform_min_depth := 0.3
+## Platforms tried after a ramp before giving up (a platform is skipped if
+## the ground ahead would push it too high to land on).
+@export var platform_tries := 6
+
 @export_group("Island")
 ## How far the sides of the strip hang down (the floating island look).
 @export var skirt_depth := 25.0

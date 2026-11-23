@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PlatformShape" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/platform_shape.gd" id="1_shape"]
+
+[resource]
+script = ExtResource("1_shape")
+label = "S-curve"
+length = 160.0
+width = 10.0
+curve_amount = 18.0
+curve_wavelength = 160.0
+shape_seed = 5

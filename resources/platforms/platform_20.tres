@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlatformShape" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/platform_shape.gd" id="1_shape"]
+
+[resource]
+script = ExtResource("1_shape")
+label = "Wild island"
+length = 110.0
+width = 18.0
+edge_wobble = 3.0
+wave_height = 2.0
+wave_length = 50.0
+bank_degrees = -8.0
+skirt_depth = 14.0
+obstacles = 4
+shape_seed = 20

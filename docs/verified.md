@@ -393,3 +393,39 @@ What was tested, and how.
   no attack label, panel "Attack: off", 0 kills, and the file saved
   `[attacks] enabled=false index=0`.
 - Not checked: clicking the checkbox with the real mouse (set from the script).
+
+## 2026-11-23 – Floating platforms (20 shapes, after ramps)
+- Previews: `scenes/debug/platform_preview.tscn` in a window builds all 20
+  shapes and saved 20 numbered shots + an overview to
+  `docs/previews/platforms/`; looked at the overview and #1, 6, 8, 10, 11,
+  15, 16, 18, 20: each shape came out as meant (curves, bank, trough, gaps,
+  second deck, kicker, rough edges and rocks), wedge nose on the front.
+- Placement probe (temporary script, real `terrain.tres`, seed 1): 1000
+  chunks, 585 ramps, 286 platforms (about one every 420 m); all 20 shapes
+  appear, from 29 (Level shelf) down to 5 (Steep slide: a 30 % slope dives
+  into the ground fast, so it is often cut or skipped). Placing costs
+  ~1.3 ms per chunk, building one ~3 ms. 18 of 20 shapes show in the first
+  200 chunks.
+- Launch probe (temporary, main scene headless at fixed 60 fps): the runner
+  put 40 m before each of the first 19 platforms' lips, lined up, held
+  forward at 20 / 30 / 40 / 55 m/s. Landed on it 15 / 17 / 16 / 16 of 19;
+  misses: hitting the front edge when slow (4 / 2 / 2 / 0), mostly the
+  Funnel (7 m wide front), and overshooting short ones at 55 m/s. Tried
+  gap 8 m / drop 1 m (90 % landed, 26 % fewer platforms) and 6 / 1 (all
+  landed, 63 % fewer): kept 10 / 0.5.
+- Real game in a window: screenshots off the kicker (platform ahead) and
+  running on Level shelf, Twisting ribbon and Diagonal; 60 FPS.
+- A full-run probe got stopped by a pillar right after a platform's end
+  (x −16, 1502 m): the existing "rocks stop you" rule, not a platform bug.
+- Test suite: 95 passed, 0 failed. New `level/test_platforms` (10): builder
+  mesh = collision, shallower hull and cut length; same seed same
+  platforms; 8+ platforms after ramps in 80 chunks; none without shapes;
+  each starts platform_gap past its lip with the middle of its top
+  platform_drop under it; every mesh vertex > 0.5 m above the ground
+  (sampled 2 m, placement checks every 4 m); no rocks under platforms (40
+  per chunk); level keeps a platform past its chunk, origin shift moves it,
+  freed far behind; no two platforms cross (120 chunks, with a long
+  drifting shape added).
+- Not checked: how reaching them feels with a real player steering and
+  jumping (Gabriel); `--screen 1` fell back to the main monitor (Godot saw
+  only one screen).
