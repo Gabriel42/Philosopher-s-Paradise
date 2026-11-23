@@ -212,3 +212,19 @@ func test_count_can_change_while_playing() -> void:
 	swarm.step(DT, pos, Vector3.ZERO)
 	assert_eq(swarm.positions.size(), 10)
 	assert_eq(view.multimesh.instance_count, 10)
+
+
+func test_turned_off_it_has_no_enemies_until_turned_back_on() -> void:
+	var pos := level.surface_point(0.0, 0.0)
+	swarm.settings.count = 20
+	swarm.step(DT, pos, Vector3.ZERO)
+	var view := swarm.get_node("View") as MultiMeshInstance3D
+	swarm.active = false
+	assert_eq(swarm.positions.size(), 0, "emptied at once")
+	assert_eq(view.multimesh.instance_count, 0)
+	_run(0.0, 0.0, Vector3(0, 0, -30), 1.0)
+	assert_eq(swarm.positions.size(), 0, "stays empty while off")
+	swarm.active = true
+	swarm.step(DT, pos, Vector3(0, 0, -30))
+	assert_eq(swarm.positions.size(), 20)
+	assert_true(swarm.positions[0].z < pos.z - 40.0, "back ahead of the runner")

@@ -42,10 +42,14 @@
   sideways to cut you off; you dodge them. They can overlap each other a
   little but keep some space between them, so they look like a swarm, not a
   blob. Touching one does nothing yet (only counted).
+- **enemy2** (placeholder: orange capsules, 6 at a time) appear ahead, take a
+  spot beside you (3 per side, 5 m out, 4 m apart) and keep up with your
+  speed (a sudden boost leaves them behind for a moment), shooting at you
+  every ~2 s. They never overlap. Shots do nothing yet (only counted).
 - Runs: ?
 
 ## Setting and art
 ?
 
 ## Controls
-- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel. Mouse / gamepad: ?
+- Keyboard: WASD move, Space jump, Shift fast fall (placeholder), Esc quits, F3 debug panel (open at start for now). At start, a screen picks which enemy types appear (for testing; Enter starts). Mouse / gamepad: ?

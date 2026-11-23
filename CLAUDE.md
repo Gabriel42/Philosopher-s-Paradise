@@ -67,9 +67,19 @@ scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
 scenes/enemy/     enemy_swarm.gd (EnemySwarm): every enemy, cheap: arrays of
                   numbers, a fixed pool, one MultiMesh draws them all, ground
                   height from TerrainHeight (no physics); spawns them ahead,
-                  intercepts the runner, counts touches (runner_touched)
-scenes/debug/     debug_menu.tscn + .gd (DebugMenu): F3 panel (enemy touches,
-                  enemy count, FPS)
+                  intercepts the runner, counts touches (runner_touched);
+                  spacing shared by every type; _steer() is what a type
+                  overrides to move its own way
+                  enemy_flankers.gd (EnemyFlankers, extends EnemySwarm):
+                  enemy2: keeps a spot beside the runner, matches its speed,
+                  shoots at it (shot pool, second MultiMesh, distance hits;
+                  shot_fired / runner_shot)
+scenes/debug/     debug_menu.tscn + .gd (DebugMenu): debug panel, open at
+                  start, F3 toggles (per enemy type: count, touches, shots;
+                  FPS)
+scenes/menu/      enemy_picker.tscn + .gd (EnemyPicker): start screen, game
+                  paused, one checkbox per enemy type (EnemySwarm.active),
+                  choice saved in user://enemy_picker.cfg; skipped headless
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -77,9 +87,12 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
                   movement.gd (Movement): every number of the runner
                   enemy_settings.gd (EnemySettings): every number of one
                   enemy type (each type is its own EnemySwarm node)
+                  flanker_settings.gd (FlankerSettings, extends
+                  EnemySettings): spot beside the runner, shots
 resources/        terrain.tres, movement.tres (Gabriel tweaks these)
                   enemies/: one EnemySettings per enemy type (enemy1.tres:
-                  the red capsules, node Enemy1 in main.tscn)
+                  the red capsules, node Enemy1 in main.tscn; enemy2.tres:
+                  the 6 orange shooters, node Enemy2)
 assets/           art/, audio/sfx/, audio/music/, fonts/
                   art/characters/mannequiny/: the runner model (CC-BY 4.0,
                   see CREDITS.md)
@@ -87,7 +100,9 @@ tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
                   core/: test_project (main scene loads), test_terrain_height
                   level/test_endless_level, player/test_runner, player/test_landing,
-                  player/test_runner_model, enemy/test_enemy_swarm
+                  player/test_runner_model, enemy/test_enemy_swarm,
+                  enemy/test_enemy_flankers, debug/test_debug_menu,
+                  menu/test_enemy_picker
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in

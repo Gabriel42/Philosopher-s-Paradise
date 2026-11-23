@@ -255,3 +255,59 @@ What was tested, and how.
   none inside another.
 - Not checked: how it looks and feels in play (Gabriel). 2000 enemies with
   spacing on would now drop below 60 FPS.
+
+## 2026-11-23 – enemy2: flankers that keep beside the runner and shoot
+- `--import` clean, `--quit-after 300` headless with no errors. Test suite:
+  65 passed, 0 failed (enemy1 tests unchanged after moving its steering into
+  `_steer()`).
+- New `enemy/test_enemy_flankers` (15): defaults and `enemy2.tres` (6,
+  orange), spots 3 per side at ±5 m, rows −4/0/+4 m, a spot past the edge
+  goes to the other side; they appear > 40 m ahead; at 30 m/s all 6 are
+  within 1 m of their spot after 8 s and still after 13 s, speed 30 ± 0.5,
+  no touches; still within 1.5 m after speeding to 45 m/s and drifting
+  4 m/s right; a 0.5 s boost to 60 m/s leaves them > 3 m behind, 8 s later
+  back within 1 m; closest pair over 10 s ≥ 0.6 m (no overlap); no shots
+  before reaching the spots; 25–50 shots in 20 s, more than half hit; a
+  runner standing still gets hit; `aim_shot` passes within 5 cm of a moving
+  target; shots end within their 2 s life; origin shift keeps enemies and
+  shots in place.
+- New `debug/test_debug_menu` (2): main scene's panel is open at start, lists
+  "enemy1: 40 out", "enemy2: 6 out", "Enemy2 shots: 0 fired / 0 hit"; F3
+  closes it.
+- Found and fixed while testing: enemies trailed their spot by one frame of
+  travel (1.00 m at 60 m/s, 0.42 m at 25): gaps are now measured from where
+  they end the frame (probe: 0.00 m at both speeds). Test runner faked
+  `vel.y = 0` on hills, so shots missed (20 / 49 hit); it now passes the real
+  velocity, as the game does.
+- Game in a window (`--screen 1`, temporary SceneTree script holding forward,
+  30 s, speeds 26–64 m/s with ramps and fast falls): enemy2 at their spots
+  67% of the time after the first 6 s, off by up to 3 m after boosts and
+  14.5 m once after a sudden slowdown, back within ~2 s; 55 shots, 29 hit
+  (the rest mostly hit bumps in the ground on the way). Screenshots: 6
+  orange capsules both sides of the runner, a glowing orange shot in flight
+  next to its shooter, panel open at start with both types and the shot
+  counter, 60 FPS.
+- Not checked: how it feels to be flanked and shot at (Gabriel). Shots are
+  small (0.15 m) and fly 0.2 s, so they are hard to see.
+
+## 2026-11-23 – Start screen picks which enemy types appear
+- Test suite: 73 passed, 0 failed. New: enemy1 and enemy2 turned off empty
+  their pool at once (0 drawn, no shot left flying, none fired while off)
+  and come back ahead when turned on; `menu/test_enemy_picker` (6): lists
+  enemy1 and enemy2 ticked, unticking turns that type off (other stays at
+  6), open pauses the game until Start (signal sent), Enter starts, the
+  choice is saved and ticked again next time, the main scene's picker finds
+  both types and doesn't open (or pause) headless.
+- `--import` clean, `--quit-after 300` headless with no errors.
+- Game in a window (`--screen 1`, temporary SceneTree script): picker open
+  and game paused at frame 30 (runner still at z = −5 after 2 s, mouse
+  free); unticked enemy1, sent Enter: picker closed, unpaused, mouse
+  captured, then 0 enemy1, 6 enemy2, 7 shots; debug panel "enemy1: off".
+  Saved file read back: enemy1=false, enemy2=true (deleted afterwards, so
+  the first real start has both ticked).
+- Fixed after the first screenshot: the world freezes before the camera
+  pulls back (runner's back fills the screen) → dark backdrop behind the
+  panel; the debug panel was paused and showed its placeholder text → it now
+  updates while paused.
+- Not checked: clicking the checkboxes with the real mouse (set from the
+  script instead).

@@ -26,6 +26,14 @@ const _HALF_NEIGHBOURS: Array[int] = [1, 0, -1, 1, 0, 1, 1, 1]
 @export var level: EndlessLevel
 ## What the enemies go after (a [Runner]; any Node3D works).
 @export var runner: Node3D
+## Whether this enemy type is in the run. Off: the pool is emptied at once
+## (nothing moves, nothing is drawn, no cost); back on, the enemies appear
+## ahead again at the next step. Set by the start screen ([EnemyPicker]).
+@export var active := true:
+	set(value):
+		active = value
+		if not active and settings != null:
+			_fit_count(Vector3.ZERO, Vector3.ZERO)
 
 ## Feet of each enemy, in the level's space.
 var positions := PackedVector3Array()
@@ -104,23 +112,7 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	var low := Vector3.INF
 	var high := -Vector3.INF
 	for i in positions.size():
-		var p := positions[i]
-		var target := runner_forward - closings[i]
-		var speed := move_toward(speeds[i], target, s.acceleration * delta)
-		speeds[i] = speed
-		p.z -= speed * delta
-		# Where will the runner be (sideways) when it reaches this enemy?
-		var gap := runner_pos.z - p.z
-		var closing := runner_forward - speed
-		var t := s.max_predict_time
-		if closing > 0.1:
-			t = clampf(gap / closing, 0.0, t)
-		var aim := clampf(runner_pos.x + runner_vel.x * t, -half, half)
-		var want := clampf((aim - p.x) * 3.0, -s.side_speed, s.side_speed)
-		var side := move_toward(side_speeds[i], want, s.side_acceleration * delta)
-		side_speeds[i] = side
-		p.x = clampf(p.x + side * delta, -half, half)
-		positions[i] = p
+		_steer(i, delta, runner_pos, runner_vel, half)
 	_keep_apart(half)
 	for i in positions.size():
 		var p := positions[i]
@@ -136,11 +128,47 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 		_buffer[b + 11] = p.z
 		low = low.min(p)
 		high = high.max(p)
+	_after_step(delta, runner_pos, runner_vel)
 	if positions.is_empty():
 		return
 	_multimesh.buffer = _buffer
 	var grow := Vector3(s.radius, s.height, s.radius)
 	_multimesh.custom_aabb = AABB(low - grow, high - low + grow * 2.0)
+
+
+## Moves enemy [param i] on X and Z (its speed and sideways speed too) for
+## [param delta] seconds, toward a runner at [param runner_pos] going at
+## [param runner_vel]; [param half] is how far it may go from the middle of
+## the strip. Spacing, ground height, touches and recycling come after, for
+## every type. Override to give an enemy type its own way of moving.
+## Here (enemy1): run [member closings] slower than the runner and cut it off.
+func _steer(i: int, delta: float, runner_pos: Vector3, runner_vel: Vector3,
+		half: float) -> void:
+	var s := settings
+	var runner_forward := maxf(-runner_vel.z, 0.0)
+	var p := positions[i]
+	var target := runner_forward - closings[i]
+	var speed := move_toward(speeds[i], target, s.acceleration * delta)
+	speeds[i] = speed
+	p.z -= speed * delta
+	# Where will the runner be (sideways) when it reaches this enemy?
+	var gap := runner_pos.z - p.z
+	var closing := runner_forward - speed
+	var t := s.max_predict_time
+	if closing > 0.1:
+		t = clampf(gap / closing, 0.0, t)
+	var aim := clampf(runner_pos.x + runner_vel.x * t, -half, half)
+	var want := clampf((aim - p.x) * 3.0, -s.side_speed, s.side_speed)
+	var side := move_toward(side_speeds[i], want, s.side_acceleration * delta)
+	side_speeds[i] = side
+	p.x = clampf(p.x + side * delta, -half, half)
+	positions[i] = p
+
+
+## Called at the end of [method step], after every enemy moved (ground height
+## set, touches checked). Override to add work (e.g. shooting).
+func _after_step(_delta: float, _runner_pos: Vector3, _runner_vel: Vector3) -> void:
+	pass
 
 
 ## Pushes apart (sideways, on X and Z) any two enemies whose
@@ -264,9 +292,9 @@ func _spawn(i: int, runner_pos: Vector3, runner_forward: float) -> void:
 
 
 ## Grows or shrinks the pool to [member EnemySettings.count] (also when it is
-## changed while playing).
+## changed while playing), or to 0 when not [member active].
 func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
-	var count := maxi(settings.count, 0)
+	var count := maxi(settings.count, 0) if active else 0
 	var old := positions.size()
 	if count == old:
 		return
@@ -275,6 +303,7 @@ func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
 	closings.resize(count)
 	side_speeds.resize(count)
 	touching.resize(count)
+	_resize(count)
 	var runner_forward := maxf(-runner_vel.z, 0.0)
 	for i in range(old, count):
 		_spawn(i, runner_pos, runner_forward)
@@ -287,6 +316,12 @@ func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
 		_buffer[b + 5] = 1.0
 		_buffer[b + 10] = 1.0
 	_multimesh.instance_count = count
+
+
+## Called when the pool changes to [param count] enemies, before the new ones
+## are spawned. Override to resize per-enemy arrays of your own.
+func _resize(_count: int) -> void:
+	pass
 
 
 func _on_origin_shifted(delta: Vector3) -> void:
