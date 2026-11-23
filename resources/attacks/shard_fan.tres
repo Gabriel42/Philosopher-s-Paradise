@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_s4380"]
+
+[resource]
+script = ExtResource("1_s4380")
+display_name = "Shard Fan"
+damage = 2.0
+cooldown = 0.9
+reach = 35.0
+count = 5
+speed = 60.0
+size = 0.2
+duration = 0.6
+pierce = 1
+spread = 40.0
+color = Color(0.8, 0.6, 1, 1)

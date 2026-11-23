@@ -13,10 +13,18 @@ extends Node3D
 ## Flying types ([member EnemySettings.flying]) instead fly forward on their
 ## own, swaying and bobbing in a rough spiral (see [method _step_flying]); for
 ## them [member positions] is the middle of the capsule, not the feet.
+## Enemies have health: attacks ([Attack]) find them with [method center] and
+## [method distance_to] and hurt them with [method damage]; a killed enemy
+## goes back to the pool and appears ahead again.
 ## Lives under the [EndlessLevel]: positions are in the level's shifted space.
 
 ## Sent when the runner starts touching an enemy. [param total]: touches so far.
 signal runner_touched(total: int)
+## Sent when an attack kills an enemy. [param total]: kills so far.
+signal enemy_killed(total: int)
+
+## Group every swarm joins, so attacks find every enemy type.
+const GROUP := "enemy_swarms"
 
 ## Floats per enemy in the MultiMesh buffer (a 3×4 transform).
 const _STRIDE := 12
@@ -58,14 +66,24 @@ var bob_frequencies := PackedFloat32Array()
 ## Flyers: where in each wave each one starts (radians).
 var sway_phases := PackedFloat32Array()
 var bob_phases := PackedFloat32Array()
+## Health left of each enemy.
+var health := PackedFloat32Array()
+## Goes up by one each time a slot gets a new enemy (spawned, or killed and
+## sent ahead), so an attack holding a slot can tell its enemy is gone.
+var generations := PackedInt32Array()
 ## How many times the runner touched an enemy.
 var touches := 0
+## How many enemies attacks killed.
+var kills := 0
 
 var _rng := RandomNumberGenerator.new()
 var _multimesh := MultiMesh.new()
 var _buffer := PackedFloat32Array()
 var _last_runner_pos := Vector3.ZERO
 var _has_last_runner_pos := false
+# Runner as given to the last step (killed enemies are sent ahead of it).
+var _step_runner_pos := Vector3.ZERO
+var _step_runner_vel := Vector3.ZERO
 # Spacing grid and close pairs (see _keep_apart), kept to avoid allocating.
 var _cell_start := PackedInt32Array()
 var _cell_cursor := PackedInt32Array()
@@ -80,6 +98,7 @@ func _ready() -> void:
 	if level == null:
 		level = get_parent() as EndlessLevel
 	_rng.seed = settings.spawn_seed
+	add_to_group(GROUP)
 	var material := StandardMaterial3D.new()
 	material.albedo_color = settings.color
 	var mesh := CapsuleMesh.new()
@@ -117,6 +136,8 @@ func _physics_process(delta: float) -> void:
 ## touches, sends back the ones left behind, and updates the drawing.
 func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	var s := settings
+	_step_runner_pos = runner_pos
+	_step_runner_vel = runner_vel
 	_fit_count(runner_pos, runner_vel)
 	if s.flying:
 		_step_flying(delta, runner_pos)
@@ -382,6 +403,8 @@ func _check_touch(i: int, p: Vector3, runner_pos: Vector3) -> void:
 func _spawn(i: int, runner_pos: Vector3, runner_forward: float) -> void:
 	var s := settings
 	var half := level.settings.width * 0.5 - s.edge_margin
+	health[i] = s.health
+	generations[i] += 1
 	if s.flying:
 		_spawn_flyer(i, runner_pos, half)
 		return
@@ -427,6 +450,8 @@ func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
 	closings.resize(count)
 	side_speeds.resize(count)
 	touching.resize(count)
+	health.resize(count)
+	generations.resize(count)
 	_resize(count)
 	lanes.resize(count)
 	fly_times.resize(count)
@@ -448,6 +473,56 @@ func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
 	_multimesh.instance_count = count
 
 
+## Middle of enemy [param i]'s capsule (level space).
+func center(i: int) -> Vector3:
+	if settings.flying:
+		return positions[i]
+	return positions[i] + Vector3(0.0, settings.height * 0.5, 0.0)
+
+
+## How far [param point] is from the surface of enemy [param i]'s capsule
+## (negative inside), along the axis it is drawn with (upright for runners,
+## nose forward for flyers).
+func distance_to(i: int, point: Vector3) -> float:
+	var s := settings
+	var axis := Vector3.UP
+	var b := i * _STRIDE
+	if b + 9 < _buffer.size():
+		var drawn := Vector3(_buffer[b + 1], _buffer[b + 5], _buffer[b + 9])
+		if drawn.length_squared() > 0.0001:
+			axis = drawn.normalized()
+	var half_axis := maxf(s.height * 0.5 - s.radius, 0.0)
+	var c := center(i)
+	var along := clampf((point - c).dot(axis), -half_axis, half_axis)
+	return point.distance_to(c + axis * along) - s.radius
+
+
+## Takes [param amount] health from enemy [param i]. At 0 it is killed:
+## counted, [signal enemy_killed] sent, and the slot appears ahead of the
+## runner again with full health. Returns true if it was killed.
+func damage(i: int, amount: float) -> bool:
+	if i < 0 or i >= health.size():
+		return false
+	health[i] -= amount
+	if health[i] > 0.0:
+		return false
+	kills += 1
+	enemy_killed.emit(kills)
+	_spawn(i, _step_runner_pos, maxf(-_step_runner_vel.z, 0.0))
+	return true
+
+
+## Drags enemy [param i] by [param offset] on X and Z (its height still
+## follows the ground, or its flight). For flyers it moves their sway line.
+func drag(i: int, offset: Vector3) -> void:
+	var p := positions[i]
+	p.x += offset.x
+	p.z += offset.z
+	positions[i] = p
+	if settings.flying:
+		lanes[i] += offset.x
+
+
 ## Called when the pool changes to [param count] enemies, before the new ones
 ## are spawned. Override to resize per-enemy arrays of your own.
 func _resize(_count: int) -> void:
@@ -458,3 +533,4 @@ func _on_origin_shifted(delta: Vector3) -> void:
 	for i in positions.size():
 		positions[i] -= delta
 	_last_runner_pos -= delta
+	_step_runner_pos -= delta

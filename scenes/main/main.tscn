@@ -58,8 +58,10 @@ script = ExtResource("4_swarm")
 settings = ExtResource("10_enemy3")
 runner = NodePath("../Runner")
 
-[node name="DebugMenu" parent="." node_paths=PackedStringArray("swarms") instance=ExtResource("6_debug")]
+[node name="DebugMenu" parent="." node_paths=PackedStringArray("swarms", "attacks") instance=ExtResource("6_debug")]
 swarms = [NodePath("../EndlessLevel/Enemy1"), NodePath("../EndlessLevel/Enemy2"), NodePath("../EndlessLevel/Enemy3")]
+attacks = NodePath("../EndlessLevel/Runner/Attacks")
 
-[node name="EnemyPicker" parent="." node_paths=PackedStringArray("level") instance=ExtResource("9_picker")]
+[node name="EnemyPicker" parent="." node_paths=PackedStringArray("level", "attacks") instance=ExtResource("9_picker")]
 level = NodePath("../EndlessLevel")
+attacks = NodePath("../EndlessLevel/Runner/Attacks")

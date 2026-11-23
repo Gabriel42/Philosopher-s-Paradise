@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AttackSettings" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/attack_settings.gd" id="1_6a4tf"]
+
+[resource]
+script = ExtResource("1_6a4tf")
+display_name = "Vortex"
+damage = 3.0
+cooldown = 3.5
+reach = 40.0
+size = 0.6
+area = 6.0
+duration = 2.5
+pull = 5.0
+color = Color(0.6, 0.35, 1, 1)

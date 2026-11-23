@@ -126,3 +126,75 @@ func test_a_flying_type_can_be_turned_off() -> void:
 	assert_eq(flyers.positions.size(), 0)
 	flyers.step(1.0 / 60.0, level.surface_point(0.0, 0.0), Vector3.ZERO)
 	assert_eq(flyers.positions.size(), 0, "stays empty while off")
+
+
+# --- Attacks checkbox -----------------------------------------------------
+
+## The runner's attacks, under a pretend runner in the level.
+func _attacks() -> PlayerAttacks:
+	var runner := Node3D.new()
+	level.add_child(runner)
+	var attacks := (load("res://scenes/player/attacks/player_attacks.tscn") as PackedScene).instantiate() as PlayerAttacks
+	runner.add_child(attacks)
+	return attacks
+
+
+func _picker_with(attacks: PlayerAttacks, show := false) -> EnemyPicker:
+	var picker := (load("res://scenes/menu/enemy_picker.tscn") as PackedScene).instantiate() as EnemyPicker
+	picker.level = level
+	picker.attacks = attacks
+	picker.save_path = SAVE
+	picker.show_at_start = show
+	picker.skip_when_headless = false
+	keep(picker)
+	return picker
+
+
+func test_no_attacks_checkbox_without_attacks() -> void:
+	var picker := _picker()
+	assert_eq(picker.attacks_box, null)
+
+
+func test_attacks_checkbox_turns_attacks_on_and_off() -> void:
+	var attacks := _attacks()
+	var picker := _picker_with(attacks)
+	assert_true(picker.attacks_box.button_pressed, "ticked by default")
+	assert_true(attacks.current().active)
+	picker.attacks_box.button_pressed = false
+	assert_false(attacks.enabled)
+	for attack in attacks.attacks:
+		assert_false(attack.active)
+	assert_false((attacks.get_node("Hud/AttackName") as Label).visible, "label hidden")
+	picker.attacks_box.button_pressed = true
+	assert_true(attacks.enabled)
+	assert_true(attacks.current().active)
+
+
+func test_remembers_attacks_off() -> void:
+	var attacks := _attacks()
+	var picker := _picker_with(attacks, true)
+	picker.attacks_box.button_pressed = false
+	picker.start()
+	picker.queue_free()
+	attacks.enabled = true  # a fresh game
+	var again := _picker_with(attacks, true)
+	assert_false(again.attacks_box.button_pressed, "still unticked")
+	assert_false(attacks.enabled)
+
+
+func test_starts_with_the_attack_last_used() -> void:
+	var attacks := _attacks()
+	var picker := _picker_with(attacks, true)
+	picker.start()
+	attacks.select(4)  # swapped with the wheel during the run
+	picker.free()
+	attacks.select(0)  # a fresh game
+	_picker_with(attacks, true)
+	assert_eq(attacks.index, 4)
+
+
+func test_main_scene_has_the_attacks_checkbox() -> void:
+	var main := keep((load("res://scenes/main/main.tscn") as PackedScene).instantiate())
+	var picker := main.get_node("EnemyPicker") as EnemyPicker
+	assert_ne(picker.attacks_box, null)
+	assert_eq(picker.attacks, main.get_node("EndlessLevel/Runner/Attacks"))
