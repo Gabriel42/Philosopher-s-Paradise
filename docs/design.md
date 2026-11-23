@@ -23,9 +23,15 @@
 - Fast fall into a downhill slope is how you gain speed.
 - Effects show it: dust at the feet on landing (more after a fast fall), a
   camera shake on hard landings. No ring.
-- In the air the runner takes a skydive pose (belly down, arms and legs
-  spread). Starting a fast fall, it tucks into a ball and rolls forward once,
-  then opens back into the skydive.
+- In the air, left / right slide the runner sideways (up to 14 m/s, on top of
+  turning toward the key), keeping its forward speed; letting go stops the
+  slide.
+- In the air the runner takes a flying pose: belly down, head forward, arms
+  swept back along the body, legs together. The body points where it goes
+  (head up when rising, down when falling, 70% of the climb angle, at most
+  45° up / 50° down) and banks up to 30° toward the side it slides.
+  Starting a fast fall, it tucks into a ball and rolls forward once, then
+  opens back into the flying pose.
 - Landing has no stomp and no squash: the runner snaps upright and just keeps
   running. Landing in the middle of the roll (past head-first) finishes the
   flip forward first.

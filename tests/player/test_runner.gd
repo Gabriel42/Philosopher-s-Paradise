@@ -93,7 +93,7 @@ func test_model_skydives_in_the_air_only() -> void:
 	await get_tree().create_timer(0.45).timeout
 	assert_false(runner.is_on_floor(), "in the air")
 	assert_near(model.pose_amount(), 1.0, 0.01, "skydive pose")
-	assert_near(model.tip(), -model.skydive_angle, 0.1, "tipped forward")
+	assert_near(model.tip(), model.flight_tip(), 3.0, "tipped forward, following the climb")
 	while not runner.is_on_floor():
 		await _wait(1)
 	await get_tree().create_timer(0.3).timeout

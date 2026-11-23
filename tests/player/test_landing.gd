@@ -89,7 +89,8 @@ func test_fast_fall_rolls_tucked_then_skydives_then_rights() -> void:
 	assert_false(runner.is_on_floor(), "still in the air")
 	assert_true(lowest < -300.0, "rolled a full turn (lowest tip %.0f°)" % lowest)
 	assert_near(most_tucked, 1.0, 0.01, "fully tucked during the roll")
-	assert_near(model.tip(), -model.skydive_angle, 0.1, "skydive tip after the roll")
+	assert_near(model.tip(), model.flight_tip(), 3.0, "flying tip after the roll")
+	assert_true(model.tip() < -model.skydive_angle, "head down, falling fast (%.0f°)" % model.tip())
 	assert_near(model.tuck_amount(), 0.0, 0.01, "opened into the skydive")
 	assert_near(model.pose_amount(), 1.0, 0.01, "in the skydive pose")
 	while not runner.is_on_floor():
@@ -174,3 +175,25 @@ func test_small_hop_leaves_no_effects() -> void:
 	await _drop(0.0, Vector3(0.0, -1.0, -10.0), false, null, 0.02)
 	assert_eq(world.get_child_count(), 2, "only floor and runner")
 	assert_eq(runner.get_node("Effects").get_child_count(), 0, "nothing")
+
+
+func test_left_right_slides_sideways_in_the_air() -> void:
+	# 20 m up (≈ 1.1 s of fall), going north at 20 m/s, holding right.
+	await _drop(0.0, Vector3(0.0, 0.0, -20.0), false, null, 20.0)
+	runner.move_input = Vector2(1.0, 0.0)
+	var x0 := runner.position.x
+	await get_tree().create_timer(0.5).timeout
+	assert_false(runner.is_on_floor(), "still in the air")
+	assert_near(runner.air_side, runner.movement.air_side_speed, 0.01, "full slide to the right")
+	var right := Vector3(-runner.heading.z, 0.0, runner.heading.x)
+	assert_near(Vector3(runner.velocity.x, 0.0, runner.velocity.z).dot(right), 14.0, 0.5,
+			"14 m/s sideways")
+	assert_true(runner.position.x - x0 > 4.0, "moved right %.1f m" % (runner.position.x - x0))
+	var forward := Vector3(runner.velocity.x, 0.0, runner.velocity.z).dot(runner.heading)
+	assert_between(forward, 19.5, 22.1, "forward speed kept (air_accel up to run_speed)")
+	runner.move_input = Vector2.ZERO
+	await get_tree().create_timer(0.4).timeout
+	assert_near(runner.air_side, 0.0, 0.01, "slide stops when let go")
+	while not runner.is_on_floor():
+		await get_tree().physics_frame
+	assert_eq(runner.air_side, 0.0, "no slide on the ground")
