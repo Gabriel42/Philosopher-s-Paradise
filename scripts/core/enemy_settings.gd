@@ -1,9 +1,13 @@
 class_name EnemySettings
 extends Resource
-## Every number of the enemies (resources/enemy.tres).
+## Every number of one enemy type (e.g. resources/enemies/enemy1.tres). Each
+## type is its own [EnemySwarm] node with its own settings.
 ## Enemies appear ahead of the runner, close in so they reach it about
-## [member meet_time] seconds later, and move sideways to cut it off. Speeds in m/s, accelerations in m/s².
+## [member meet_time] seconds later, and move sideways to cut it off.
+## Speeds in m/s, accelerations in m/s².
 
+## Name of this enemy type (shown in the debug panel).
+@export var display_name := "enemy1"
 ## How many enemies are out at once (can be changed while playing).
 @export_range(0, 5000) var count := 40
 ## Seed of the spawn spots, so runs stay reproducible.
@@ -13,6 +17,13 @@ extends Resource
 @export var radius := 0.3
 ## Full height of the capsule (the runner is 1.8 m).
 @export var height := 1.0
+## Invisible circle inside each enemy that others can't enter: two enemies
+## keep their centres at least twice this apart (below twice [member radius]
+## they still overlap a little, like a swarm). 0 = no spacing.
+@export_range(0.0, 2.0) var spacing_radius := 0.2
+## How many times per frame close enemies are pushed apart (more = a packed
+## crowd keeps its spacing better, but costs more).
+@export_range(1, 8) var spacing_passes := 3
 @export var color := Color(0.85, 0.08, 0.08)
 
 @export_group("Speed")

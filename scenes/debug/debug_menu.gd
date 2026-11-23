@@ -26,8 +26,9 @@ func _process(_delta: float) -> void:
 	if not _panel.visible:
 		return
 	var enemies := swarm.positions.size() if swarm != null else 0
-	_label.text = "Enemy touches: %d\nEnemies: %d\nFPS: %d" % [
-			touches, enemies, roundi(Engine.get_frames_per_second())]
+	var kind := swarm.settings.display_name if swarm != null and swarm.settings != null else "-"
+	_label.text = "Enemy touches: %d\nEnemies (%s): %d\nFPS: %d" % [
+			touches, kind, enemies, roundi(Engine.get_frames_per_second())]
 
 
 func _on_runner_touched(total: int) -> void:

@@ -75,8 +75,11 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
                   terrain_height.gd (TerrainHeight): ground height at any point
                   (downhill + hills + bumps + ramps), pure and seeded
                   movement.gd (Movement): every number of the runner
-                  enemy_settings.gd (EnemySettings): every number of the enemies
-resources/        terrain.tres, movement.tres, enemy.tres (Gabriel tweaks these)
+                  enemy_settings.gd (EnemySettings): every number of one
+                  enemy type (each type is its own EnemySwarm node)
+resources/        terrain.tres, movement.tres (Gabriel tweaks these)
+                  enemies/: one EnemySettings per enemy type (enemy1.tres:
+                  the red capsules, node Enemy1 in main.tscn)
 assets/           art/, audio/sfx/, audio/music/, fonts/
                   art/characters/mannequiny/: the runner model (CC-BY 4.0,
                   see CREDITS.md)

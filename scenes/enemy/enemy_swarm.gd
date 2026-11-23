@@ -17,6 +17,9 @@ signal runner_touched(total: int)
 
 ## Floats per enemy in the MultiMesh buffer (a 3×4 transform).
 const _STRIDE := 12
+## Cell offsets (x, z pairs) looked at besides an enemy's own cell when
+## listing close pairs: half of the 8 neighbours, so each pair comes up once.
+const _HALF_NEIGHBOURS: Array[int] = [1, 0, -1, 1, 0, 1, 1, 1]
 
 @export var settings: EnemySettings
 ## The level (terrain height, width, origin shifts). Defaults to the parent.
@@ -42,6 +45,12 @@ var _multimesh := MultiMesh.new()
 var _buffer := PackedFloat32Array()
 var _last_runner_pos := Vector3.ZERO
 var _has_last_runner_pos := false
+# Spacing grid and close pairs (see _keep_apart), kept to avoid allocating.
+var _cell_start := PackedInt32Array()
+var _cell_cursor := PackedInt32Array()
+var _cell_of := PackedInt32Array()
+var _cell_items := PackedInt32Array()
+var _pairs := PackedInt32Array()
 
 
 func _ready() -> void:
@@ -111,6 +120,10 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 		var side := move_toward(side_speeds[i], want, s.side_acceleration * delta)
 		side_speeds[i] = side
 		p.x = clampf(p.x + side * delta, -half, half)
+		positions[i] = p
+	_keep_apart(half)
+	for i in positions.size():
+		var p := positions[i]
 		p.y = terrain.height_at(p.x + origin.x, p.z + origin.z) - origin.y
 		positions[i] = p
 		_check_touch(i, p, runner_pos)
@@ -128,6 +141,97 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	_multimesh.buffer = _buffer
 	var grow := Vector3(s.radius, s.height, s.radius)
 	_multimesh.custom_aabb = AABB(low - grow, high - low + grow * 2.0)
+
+
+## Pushes apart (sideways, on X and Z) any two enemies whose
+## [member EnemySettings.spacing_radius] circles overlap, each by half the
+## overlap, so they can overlap a little but never sit inside each other.
+## Cheap: once per frame, enemies are sorted into a grid of cells one spacing
+## wide (packed arrays, cells hashed into a table) and each one only looks in
+## its own and the 8 neighbouring cells to list the pairs that are close; the
+## [member EnemySettings.spacing_passes] passes then only go over those pairs.
+func _keep_apart(half: float) -> void:
+	var r := settings.spacing_radius
+	var n := positions.size()
+	if r <= 0.0 or n < 2:
+		return
+	var min_dist := r * 2.0
+	var inv := 1.0 / min_dist
+	var table := 64
+	while table < n * 2:
+		table *= 2
+	var mask := table - 1
+	# Counting sort of the enemies by cell: enemies of cell h are
+	# _cell_items[_cell_start[h] .. _cell_start[h + 1]].
+	_cell_start.resize(table + 1)
+	_cell_start.fill(0)
+	_cell_of.resize(n)
+	_cell_items.resize(n)
+	for i in n:
+		var p := positions[i]
+		var h := _cell_hash(floori(p.x * inv), floori(p.z * inv), mask)
+		_cell_of[i] = h
+		_cell_start[h + 1] += 1
+	for h in table:
+		_cell_start[h + 1] += _cell_start[h]
+	_cell_cursor = _cell_start.duplicate()
+	for i in n:
+		var h := _cell_of[i]
+		_cell_items[_cell_cursor[h]] = i
+		_cell_cursor[h] += 1
+	# Pairs close enough to matter this frame.
+	var near := min_dist * 1.25
+	var near_sq := near * near
+	_pairs.clear()
+	for i in n:
+		var p := positions[i]
+		var cx := floori(p.x * inv)
+		var cz := floori(p.z * inv)
+		# Own cell (pairs once: j > i), then half the neighbours (the other
+		# half finds this pair from the other side).
+		for c in 5:
+			var h := _cell_of[i]
+			if c > 0:
+				h = _cell_hash(cx + _HALF_NEIGHBOURS[c * 2 - 2],
+						cz + _HALF_NEIGHBOURS[c * 2 - 1], mask)
+				if h == _cell_of[i]:
+					continue  # hashed to its own slot: already looked there
+			for k in range(_cell_start[h], _cell_start[h + 1]):
+				var j := _cell_items[k]
+				if c == 0 and j <= i:
+					continue
+				var q := positions[j]
+				var ax := q.x - p.x
+				var az := q.z - p.z
+				if ax * ax + az * az < near_sq:
+					_pairs.append(i)
+					_pairs.append(j)
+	if _pairs.is_empty():
+		return
+	for pass_index in maxi(settings.spacing_passes, 1):
+		for k in range(0, _pairs.size(), 2):
+			var i := _pairs[k]
+			var j := _pairs[k + 1]
+			var p := positions[i]
+			var q := positions[j]
+			var apart := Vector2(q.x - p.x, q.z - p.z)
+			var dist := apart.length()
+			if dist >= min_dist:
+				continue
+			# Same spot: split them along X (deterministic).
+			var dir := apart / dist if dist > 0.0001 else Vector2.RIGHT
+			var push := dir * (min_dist - dist) * 0.5
+			p.x = clampf(p.x - push.x, -half, half)
+			p.z -= push.y
+			q.x = clampf(q.x + push.x, -half, half)
+			q.z += push.y
+			positions[i] = p
+			positions[j] = q
+
+
+## Slot of grid cell ([param cx], [param cz]) in a table of [param mask] + 1.
+static func _cell_hash(cx: int, cz: int, mask: int) -> int:
+	return ((cx * 73856093) ^ (cz * 19349663)) & mask
 
 
 func _check_touch(i: int, p: Vector3, runner_pos: Vector3) -> void:

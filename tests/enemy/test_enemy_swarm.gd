@@ -128,6 +128,50 @@ func test_a_touch_counts_once() -> void:
 	assert_eq(sent, [1, 2] as Array[int])
 
 
+## Fills the pool with [param count] enemies, all within a [param size] m
+## square [param distance] ahead, running 24 m/s (6 slower than the runner).
+func _crowd(count: int, distance: float, size: float) -> void:
+	swarm.settings.count = count
+	swarm.step(0.0, level.surface_point(0.0, 0.0), Vector3.ZERO)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	for i in count:
+		swarm.positions[i] = level.surface_point(rng.randf() * size,
+				distance + rng.randf() * size)
+		swarm.speeds[i] = 24.0
+		swarm.closings[i] = 6.0
+
+
+## Smallest sideways (X/Z) distance between two enemies.
+func _closest_pair() -> float:
+	var best := INF
+	for i in swarm.positions.size():
+		for j in range(i + 1, swarm.positions.size()):
+			var a := swarm.positions[i]
+			var b := swarm.positions[j]
+			best = minf(best, Vector2(a.x - b.x, a.z - b.z).length())
+	return best
+
+
+func test_two_on_one_spot_are_pushed_apart() -> void:
+	_crowd(2, 100.0, 0.0)
+	_run(0.0, 0.0, Vector3(0, 0, -30), DT)
+	assert_near(_closest_pair(), 0.4, 0.01)
+
+
+func test_a_crowd_keeps_its_spacing() -> void:
+	_crowd(40, 100.0, 1.0)  # 40 enemies in 1 m²: deep inside each other
+	_run(0.0, 0.0, Vector3(0, 0, -30), 1.0)  # all cutting off the same runner
+	assert_true(_closest_pair() > 0.36, "closest pair %.3f m" % _closest_pair())
+
+
+func test_no_spacing_lets_them_overlap() -> void:
+	swarm.settings.spacing_radius = 0.0
+	_crowd(2, 100.0, 0.0)
+	_run(0.0, 0.0, Vector3(0, 0, -30), DT)
+	assert_true(_closest_pair() < 0.01)
+
+
 func test_jumping_over_does_not_touch() -> void:
 	_place(0.0, 0.0, 0.0)
 	swarm.step(DT, swarm.positions[0] + Vector3.UP * 1.2, Vector3.ZERO)

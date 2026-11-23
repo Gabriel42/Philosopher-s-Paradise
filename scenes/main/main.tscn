@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/level/endless_level.tscn" id="2_level"]
 [ext_resource type="PackedScene" path="res://scenes/player/runner.tscn" id="3_runner"]
 [ext_resource type="Script" path="res://scenes/enemy/enemy_swarm.gd" id="4_swarm"]
-[ext_resource type="Resource" path="res://resources/enemy.tres" id="5_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/enemy1.tres" id="5_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/debug/debug_menu.tscn" id="6_debug"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
@@ -39,10 +39,10 @@ runner = NodePath("Runner")
 
 [node name="Runner" parent="EndlessLevel" instance=ExtResource("3_runner")]
 
-[node name="EnemySwarm" type="Node3D" parent="EndlessLevel" node_paths=PackedStringArray("runner")]
+[node name="Enemy1" type="Node3D" parent="EndlessLevel" node_paths=PackedStringArray("runner")]
 script = ExtResource("4_swarm")
 settings = ExtResource("5_enemy")
 runner = NodePath("../Runner")
 
 [node name="DebugMenu" parent="." node_paths=PackedStringArray("swarm") instance=ExtResource("6_debug")]
-swarm = NodePath("../EndlessLevel/EnemySwarm")
+swarm = NodePath("../EndlessLevel/Enemy1")

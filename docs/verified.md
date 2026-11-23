@@ -227,3 +227,31 @@ What was tested, and how.
   behind the runner.
 - Not checked: whether enemies visibly pop in at 45–60 m (fog 0.003 only hides
   ~15% at that distance; can't tell from a still), and how it feels (Gabriel).
+
+## 2026-11-23 – Current enemy type named enemy1
+- `--import` clean, test suite 46 passed, 0 failed, `--quit-after 300`
+  headless with no errors.
+- Temporary SceneTree script on the main scene: node `EndlessLevel/Enemy1`
+  uses `res://resources/enemies/enemy1.tres` and has 40 enemies; the F3 label
+  reads "Enemies (enemy1): 40".
+
+## 2026-11-23 – Enemies keep a little space between them
+- `spacing_radius` 0.2 m (capsule radius 0.3): centres stay ≥ 0.4 m apart,
+  pushed apart sideways each frame (grid of 0.4 m cells hashed into packed
+  arrays, close pairs listed once, then `spacing_passes` = 3 passes).
+- Test suite: 49 passed, 0 failed. New: two enemies on one spot end 0.4 ±
+  0.01 m apart after one step; 40 enemies dropped in 1 m² and all cutting off
+  the same runner for 1 s stay > 0.36 m apart (1 pass only reached 0.32, 2+
+  pass); spacing 0 leaves them overlapping.
+- Found and fixed while testing: a neighbour cell hashing to the enemy's own
+  slot paired the enemy with itself and shoved it sideways (crowd test went
+  to 0.11 m).
+- Cost of `step` (headless, 60 steps): 40 enemies 0.15 → 0.24 ms (0.26 packed
+  in 10 × 10 m); 2000 enemies 7.2 → 14.2 ms spread out, 22.4 ms packed. A
+  first version with a Dictionary grid took 20.7 ms for 2000.
+- Game in a window (`--screen 1`, holding forward, 15 s, 40 enemies): 120
+  meets, 2.70–3.17 s (median 3.00); closest pair seen 0.348 m. Screenshot:
+  a packed clump around the runner, capsules touching and a bit overlapped,
+  none inside another.
+- Not checked: how it looks and feels in play (Gabriel). 2000 enemies with
+  spacing on would now drop below 60 FPS.
