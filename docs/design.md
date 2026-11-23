@@ -42,6 +42,13 @@
   sideways to cut you off; you dodge them. They can overlap each other a
   little but keep some space between them, so they look like a swarm, not a
   blob. Touching one does nothing yet (only counted).
+  **enemy3** (placeholder: blue capsules lying flat, nose forward), 20 of them,
+  fly ~4 m above the ground. Their movement ignores the runner: each one flies
+  forward at its own steady pace while swaying side to side and bobbing up and
+  down at two different frequencies (each has its own), so it loops in a rough,
+  never-repeating spiral and the group looks like a loose wavy flock. They appear
+  ahead of you and come back ahead when you pass them. Out of reach on the
+  ground: you hit one only by jumping into it. Touching one is only counted.
 - Runs: ?
 
 ## Setting and art

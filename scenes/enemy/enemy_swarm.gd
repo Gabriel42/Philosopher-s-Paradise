@@ -10,6 +10,9 @@ extends Node3D
 ## [member EnemySettings.meet_time] seconds later), and move sideways toward
 ## where the runner will be when they meet. They follow the ground with
 ## [method TerrainHeight.height_at] (no collisions: they pass through rocks).
+## Flying types ([member EnemySettings.flying]) instead fly forward on their
+## own, swaying and bobbing in a rough spiral (see [method _step_flying]); for
+## them [member positions] is the middle of the capsule, not the feet.
 ## Lives under the [EndlessLevel]: positions are in the level's shifted space.
 
 ## Sent when the runner starts touching an enemy. [param total]: touches so far.
@@ -37,6 +40,16 @@ var closings := PackedFloat32Array()
 var side_speeds := PackedFloat32Array()
 ## 1 while an enemy touches the runner (a touch counts once).
 var touching := PackedByteArray()
+## Flyers: X of the line each one sways around.
+var lanes := PackedFloat32Array()
+## Flyers: seconds since each one appeared (drives its waves).
+var fly_times := PackedFloat32Array()
+## Flyers: side-to-side and up-and-down waves per second of each one.
+var sway_frequencies := PackedFloat32Array()
+var bob_frequencies := PackedFloat32Array()
+## Flyers: where in each wave each one starts (radians).
+var sway_phases := PackedFloat32Array()
+var bob_phases := PackedFloat32Array()
 ## How many times the runner touched an enemy.
 var touches := 0
 
@@ -97,6 +110,9 @@ func _physics_process(delta: float) -> void:
 func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	var s := settings
 	_fit_count(runner_pos, runner_vel)
+	if s.flying:
+		_step_flying(delta, runner_pos)
+		return
 	var runner_forward := maxf(-runner_vel.z, 0.0)
 	var half := level.settings.width * 0.5 - s.edge_margin
 	var origin := level.origin
@@ -141,6 +157,92 @@ func step(delta: float, runner_pos: Vector3, runner_vel: Vector3) -> void:
 	_multimesh.buffer = _buffer
 	var grow := Vector3(s.radius, s.height, s.radius)
 	_multimesh.custom_aabb = AABB(low - grow, high - low + grow * 2.0)
+
+
+## Flyers: each one moves forward (-Z) at [member EnemySettings.fly_speed]
+## and sits on its waves: sideways [code]lane + sway_width * sin(2π f t + φ)[/code],
+## height [code]ground + fly_height + bob_height * sin(2π f' t + φ')[/code],
+## with its own two frequencies, so the path loops without repeating. The
+## capsule points along where it moves (forward, tilting with the waves).
+## [param runner_pos] is only used for touches and for sending flyers ahead.
+func _step_flying(delta: float, runner_pos: Vector3) -> void:
+	var s := settings
+	var origin := level.origin
+	var terrain := level.terrain
+	var low := Vector3.INF
+	var high := -Vector3.INF
+	for i in positions.size():
+		var old := positions[i]
+		var t := fly_times[i] + delta
+		fly_times[i] = t
+		var p := _fly_point(i, old.z - s.fly_speed * delta, t, terrain, origin)
+		positions[i] = p
+		var dir := p - old
+		_check_fly_touch(i, p, dir, runner_pos)
+		var ahead := runner_pos.z - p.z
+		if ahead < -s.recycle_distance or ahead > s.fly_ahead_limit:
+			_spawn(i, runner_pos, 0.0)
+			p = positions[i]
+			dir = Vector3.FORWARD
+		if dir.length_squared() < 0.000001:
+			dir = Vector3.FORWARD
+		# The capsule's long axis is its Y: turn Y onto the direction.
+		var basis := Basis(Quaternion(Vector3.UP, dir.normalized()))
+		var b := i * _STRIDE
+		_buffer[b] = basis.x.x
+		_buffer[b + 1] = basis.y.x
+		_buffer[b + 2] = basis.z.x
+		_buffer[b + 3] = p.x
+		_buffer[b + 4] = basis.x.y
+		_buffer[b + 5] = basis.y.y
+		_buffer[b + 6] = basis.z.y
+		_buffer[b + 7] = p.y
+		_buffer[b + 8] = basis.x.z
+		_buffer[b + 9] = basis.y.z
+		_buffer[b + 10] = basis.z.z
+		_buffer[b + 11] = p.z
+		low = low.min(p)
+		high = high.max(p)
+	if positions.is_empty():
+		return
+	_multimesh.buffer = _buffer
+	var grow := Vector3.ONE * s.height
+	_multimesh.custom_aabb = AABB(low - grow, high - low + grow * 2.0)
+
+
+## Middle of flyer [param i] at [param z] (level space), [param t] seconds
+## into its flight.
+func _fly_point(i: int, z: float, t: float, terrain: TerrainHeight,
+		origin: Vector3) -> Vector3:
+	var s := settings
+	var x := lanes[i] + s.sway_width * sin(TAU * sway_frequencies[i] * t + sway_phases[i])
+	var ground := terrain.height_at(x + origin.x, z + origin.z) - origin.y
+	var y := ground + s.fly_height \
+			+ s.bob_height * sin(TAU * bob_frequencies[i] * t + bob_phases[i])
+	return Vector3(x, y, z)
+
+
+## Touch check for a flyer lying along [param dir] with its middle at
+## [param p]: three points along its axis (ends and middle), each a ball of
+## [member EnemySettings.radius], against the runner's upright capsule.
+func _check_fly_touch(i: int, p: Vector3, dir: Vector3, runner_pos: Vector3) -> void:
+	var s := settings
+	var axis := dir.normalized() if dir.length_squared() > 0.000001 else Vector3.FORWARD
+	var half_axis := axis * maxf(s.height * 0.5 - s.radius, 0.0)
+	var reach := s.radius + s.runner_radius
+	var bottom := runner_pos.y + s.runner_radius
+	var top := runner_pos.y + maxf(s.runner_height - s.runner_radius, s.runner_radius)
+	var overlap := false
+	for k in 3:
+		var c := p + half_axis * float(k - 1)
+		var closest := Vector3(runner_pos.x, clampf(c.y, bottom, top), runner_pos.z)
+		if c.distance_squared_to(closest) < reach * reach:
+			overlap = true
+			break
+	if overlap and touching[i] == 0:
+		touches += 1
+		runner_touched.emit(touches)
+	touching[i] = 1 if overlap else 0
 
 
 ## Pushes apart (sideways, on X and Z) any two enemies whose
@@ -252,6 +354,9 @@ func _check_touch(i: int, p: Vector3, runner_pos: Vector3) -> void:
 func _spawn(i: int, runner_pos: Vector3, runner_forward: float) -> void:
 	var s := settings
 	var half := level.settings.width * 0.5 - s.edge_margin
+	if s.flying:
+		_spawn_flyer(i, runner_pos, half)
+		return
 	var p := Vector3(_rng.randf_range(-half, half), 0.0, 0.0)
 	p.z = runner_pos.z - s.spawn_distance - _rng.randf_range(0.0, s.spawn_spread)
 	var origin := level.origin
@@ -259,6 +364,25 @@ func _spawn(i: int, runner_pos: Vector3, runner_forward: float) -> void:
 	positions[i] = p
 	closings[i] = (runner_pos.z - p.z) / maxf(s.meet_time, 0.01)
 	speeds[i] = runner_forward - closings[i]
+	side_speeds[i] = 0.0
+	touching[i] = 0
+
+
+## Puts flyer [param i] ahead of the runner with its own waves; its line
+## keeps the whole sway inside the strip ([param half]: half the usable width).
+func _spawn_flyer(i: int, runner_pos: Vector3, half: float) -> void:
+	var s := settings
+	var lane_half := maxf(half - s.sway_width, 0.0)
+	lanes[i] = _rng.randf_range(-lane_half, lane_half)
+	sway_frequencies[i] = _rng.randf_range(s.sway_frequency_min, s.sway_frequency_max)
+	bob_frequencies[i] = _rng.randf_range(s.bob_frequency_min, s.bob_frequency_max)
+	sway_phases[i] = _rng.randf_range(0.0, TAU)
+	bob_phases[i] = _rng.randf_range(0.0, TAU)
+	fly_times[i] = 0.0
+	var z := runner_pos.z - s.spawn_distance - _rng.randf_range(0.0, s.spawn_spread)
+	positions[i] = _fly_point(i, z, 0.0, level.terrain, level.origin)
+	speeds[i] = s.fly_speed
+	closings[i] = 0.0
 	side_speeds[i] = 0.0
 	touching[i] = 0
 
@@ -275,6 +399,12 @@ func _fit_count(runner_pos: Vector3, runner_vel: Vector3) -> void:
 	closings.resize(count)
 	side_speeds.resize(count)
 	touching.resize(count)
+	lanes.resize(count)
+	fly_times.resize(count)
+	sway_frequencies.resize(count)
+	bob_frequencies.resize(count)
+	sway_phases.resize(count)
+	bob_phases.resize(count)
 	var runner_forward := maxf(-runner_vel.z, 0.0)
 	for i in range(old, count):
 		_spawn(i, runner_pos, runner_forward)

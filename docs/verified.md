@@ -255,3 +255,29 @@ What was tested, and how.
   none inside another.
 - Not checked: how it looks and feels in play (Gabriel). 2000 enemies with
   spacing on would now drop below 60 FPS.
+
+## 2026-11-23 – enemy3: blue flyers
+- Test suite: 60 passed, 0 failed. New flyer tests in `enemy/test_enemy_swarm`:
+  the same seed gives exactly the same flight for a runner standing still and
+  one zig-zagging and jumping (3 s, 5 flyers, every frame); forward 2 s at
+  12 m/s = 24 m (±0.01); 20 flyers over 5 s stay 2.5–5.5 m above the ground
+  (fly height 4 ± bob 1.5), so always above a standing runner's head; each
+  picks sway 0.25–0.5 Hz and bob 0.55–0.95 Hz (bob always faster, flyers
+  differ); over 10 s the sway reaches ±3 m (±0.05) and the bob crosses its
+  middle 2 × f × 10 times (±1.5); the capsule's long axis matches the
+  frame's direction of travel (0.001) and stays within 60° of forward (max
+  ~47° from the waves plus the slope); passed by 20 m → sent 45–60 m ahead,
+  over 120 m ahead → sent back; standing under one doesn't touch, a head in
+  its belly touches once; 20 flyers over 10 s stay inside the strip margin.
+  New `debug/test_debug_menu`: one line per type ("enemy3: 20 out, 0
+  touches"), and the main scene has Enemy1 + Enemy3 (flying, 20, blue).
+  enemy1's tests are unchanged and pass.
+- MultiMesh buffer layout: headless can't read transforms back (dummy
+  renderer), so in a window the transform decoded from the swarm's buffer was
+  compared with `MultiMesh.get_instance_transform(0)`: identical.
+- Game in a window (`--screen 1`, temporary autoload, holding forward):
+  screenshots at the start and at ~35 m/s: 20 blue capsules spread over the
+  strip a few metres up, lying flat, nose forward and tilted by their waves,
+  with shadows on the ground; F3 panel shows both types; 55–60 FPS.
+- Not checked: how the movement looks in motion and how it feels (Gabriel).
+  The runner model is also blue, so the flyers' colour is close to it.

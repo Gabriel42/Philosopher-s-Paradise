@@ -67,9 +67,10 @@ scenes/player/    runner.tscn + runner.gd (Runner): placeholder runner (follow
 scenes/enemy/     enemy_swarm.gd (EnemySwarm): every enemy, cheap: arrays of
                   numbers, a fixed pool, one MultiMesh draws them all, ground
                   height from TerrainHeight (no physics); spawns them ahead,
-                  intercepts the runner, counts touches (runner_touched)
-scenes/debug/     debug_menu.tscn + .gd (DebugMenu): F3 panel (enemy touches,
-                  enemy count, FPS)
+                  intercepts the runner, counts touches (runner_touched);
+                  flying types (enemy3) sway and bob forward on their own
+scenes/debug/     debug_menu.tscn + .gd (DebugMenu): F3 panel (per enemy
+                  type: count and touches; FPS)
 scripts/autoload/ global singletons (none yet)
 scripts/core/     terrain_settings.gd (TerrainSettings): every number of the level
                   terrain_height.gd (TerrainHeight): ground height at any point
@@ -79,7 +80,8 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
                   enemy type (each type is its own EnemySwarm node)
 resources/        terrain.tres, movement.tres (Gabriel tweaks these)
                   enemies/: one EnemySettings per enemy type (enemy1.tres:
-                  the red capsules, node Enemy1 in main.tscn)
+                  the red capsules, node Enemy1 in main.tscn; enemy3.tres:
+                  the blue flyers, node Enemy3)
 assets/           art/, audio/sfx/, audio/music/, fonts/
                   art/characters/mannequiny/: the runner model (CC-BY 4.0,
                   see CREDITS.md)
@@ -87,7 +89,8 @@ tests/            run_tests.tscn + run_tests.gd: the test runner (see Testing)
                   test_case.gd (TestCase): base class, asserts, keep()
                   core/: test_project (main scene loads), test_terrain_height
                   level/test_endless_level, player/test_runner, player/test_landing,
-                  player/test_runner_model, enemy/test_enemy_swarm
+                  player/test_runner_model, enemy/test_enemy_swarm,
+                  debug/test_debug_menu
 ```
 
 A script that belongs to one scene lives next to it; shared scripts go in

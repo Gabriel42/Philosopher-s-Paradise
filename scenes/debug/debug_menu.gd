@@ -1,11 +1,11 @@
 class_name DebugMenu
 extends CanvasLayer
-## Debug panel, shown and hidden with F3 (action "toggle_debug"): how many
-## times the runner touched an enemy, how many enemies are out, frame rate.
+## Debug panel, shown and hidden with F3 (action "toggle_debug"): for each
+## enemy type, how many are out and how many times the runner touched one,
+## then the frame rate.
 
-@export var swarm: EnemySwarm
-
-var touches := 0
+## Every enemy type to show (one [EnemySwarm] per type).
+@export var swarms: Array[EnemySwarm] = []
 
 @onready var _panel: Control = $Panel
 @onready var _label: Label = $Panel/Label
@@ -13,8 +13,6 @@ var touches := 0
 
 func _ready() -> void:
 	_panel.visible = false
-	if swarm != null:
-		swarm.runner_touched.connect(_on_runner_touched)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -23,13 +21,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
-	if not _panel.visible:
-		return
-	var enemies := swarm.positions.size() if swarm != null else 0
-	var kind := swarm.settings.display_name if swarm != null and swarm.settings != null else "-"
-	_label.text = "Enemy touches: %d\nEnemies (%s): %d\nFPS: %d" % [
-			touches, kind, enemies, roundi(Engine.get_frames_per_second())]
+	if _panel.visible:
+		_label.text = panel_text()
 
 
-func _on_runner_touched(total: int) -> void:
-	touches = total
+## What the panel shows: one line per enemy type, then the FPS.
+func panel_text() -> String:
+	var lines: PackedStringArray = []
+	for swarm in swarms:
+		if swarm == null:
+			continue
+		var kind := swarm.settings.display_name if swarm.settings != null else "-"
+		lines.append("%s: %d out, %d touches" % [kind, swarm.positions.size(), swarm.touches])
+	lines.append("FPS: %d" % roundi(Engine.get_frames_per_second()))
+	return "\n".join(lines)
