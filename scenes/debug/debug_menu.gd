@@ -5,7 +5,7 @@ extends CanvasLayer
 ## many times they touched the runner, shots fired / hit for types that shoot
 ## ([EnemyFlankers]), and the frame rate.
 
-## Enemy types to show, one [EnemySwarm] node each.
+## Every enemy type to show (one [EnemySwarm] per type).
 @export var swarms: Array[EnemySwarm] = []
 ## Whether the panel is open when the game starts.
 @export var start_visible := true
@@ -26,9 +26,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
-	if not _panel.visible:
-		return
-	var lines := PackedStringArray()
+	if _panel.visible:
+		_label.text = panel_text()
+
+
+## What the panel shows: one line per enemy type (or "off" if it isn't in
+## the run), shots for types that shoot, then the FPS.
+func panel_text() -> String:
+	var lines: PackedStringArray = []
 	for swarm in swarms:
 		if swarm == null:
 			continue
@@ -42,4 +47,4 @@ func _process(_delta: float) -> void:
 			lines.append("%s shots: %d fired / %d hit" % [
 					kind.left(1).to_upper() + kind.substr(1), flankers.shots_fired, flankers.shots_hit])
 	lines.append("FPS: %d" % roundi(Engine.get_frames_per_second()))
-	_label.text = "\n".join(lines)
+	return "\n".join(lines)

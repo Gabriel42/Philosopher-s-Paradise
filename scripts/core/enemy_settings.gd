@@ -53,6 +53,32 @@ extends Resource
 ## Enemies keep this far from the sides of the strip.
 @export var edge_margin := 2.0
 
+@export_group("Flying")
+## On: the enemy flies instead of running (Speed and Intercept are not used).
+## It flies forward (-Z) at [member fly_speed], lying flat with its nose
+## along where it goes, swaying side to side and bobbing up and down at two
+## different frequencies (each enemy picks its own), so it loops in a rough
+## spiral. Its movement never looks at the runner: the runner only sets where
+## it appears and when it is sent ahead again.
+@export var flying := false
+## Height of the middle of the flight above the ground (m).
+@export var fly_height := 4.0
+## Speed forward down the strip (m/s).
+@export var fly_speed := 12.0
+## How far it sways to each side of its line (m).
+@export var sway_width := 3.0
+## How far it bobs above and below [member fly_height] (m).
+@export var bob_height := 1.5
+## Side-to-side waves per second: each enemy picks one between these.
+@export var sway_frequency_min := 0.25
+@export var sway_frequency_max := 0.5
+## Up-and-down waves per second: each enemy picks one between these.
+@export var bob_frequency_min := 0.55
+@export var bob_frequency_max := 0.95
+## A flyer this far ahead of the runner (a slow runner left behind by them)
+## is sent back to [member spawn_distance] ahead.
+@export var fly_ahead_limit := 120.0
+
 @export_group("Runner hitbox")
 ## Size of the runner when checking touches (matches its collision capsule).
 @export var runner_radius := 0.4

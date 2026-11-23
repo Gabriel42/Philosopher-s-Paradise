@@ -228,3 +228,153 @@ func test_turned_off_it_has_no_enemies_until_turned_back_on() -> void:
 	swarm.step(DT, pos, Vector3(0, 0, -30))
 	assert_eq(swarm.positions.size(), 20)
 	assert_true(swarm.positions[0].z < pos.z - 40.0, "back ahead of the runner")
+
+
+# --- Flyers (enemy3 style) ---
+
+## Makes the swarm a flying type with [param count] flyers and fills the pool
+## around a runner standing at the start.
+func _fly(count := 1) -> void:
+	swarm.settings.flying = true
+	swarm.settings.count = count
+	swarm.step(0.0, level.surface_point(0.0, 0.0), Vector3.ZERO)
+
+
+## Height of flyer [param i] above the ground under it.
+func _above_ground(i: int) -> float:
+	var p := swarm.positions[i] + level.origin
+	return p.y - level.terrain.height_at(p.x, p.z)
+
+
+func test_a_flyer_moves_the_same_whatever_the_runner_does() -> void:
+	_fly(5)
+	var a: Array[PackedVector3Array] = []
+	for frame in 180:  # runner standing still
+		swarm.step(DT, level.surface_point(0.0, 0.0), Vector3.ZERO)
+		a.append(swarm.positions.duplicate())
+	# Same seed, a runner zig-zagging and jumping around instead.
+	var other := EnemySwarm.new()
+	other.settings = swarm.settings
+	level.add_child(other)
+	other.set_physics_process(false)
+	other.step(0.0, level.surface_point(0.0, 0.0), Vector3.ZERO)
+	for frame in 180:
+		var t := frame * DT
+		var pos := level.surface_point(8.0 * sin(t * 3.0), 10.0 * t) + Vector3.UP * fmod(t, 1.0)
+		other.step(DT, pos, Vector3(24.0 * cos(t * 3.0), 0.0, -10.0))
+		for i in 5:
+			if not a[frame][i].is_equal_approx(other.positions[i]):
+				fail("flyer %d differs at frame %d" % [i, frame])
+				return
+
+
+func test_a_flyer_flies_forward_at_its_speed() -> void:
+	_fly()
+	var start := swarm.positions[0].z
+	for frame in 120:
+		swarm.step(DT, level.surface_point(0.0, 0.0), Vector3.ZERO)
+	assert_near(start - swarm.positions[0].z, swarm.settings.fly_speed * 2.0, 0.01)
+
+
+func test_a_flyer_stays_in_the_air_above_a_runner_s_head() -> void:
+	_fly(20)
+	var s := swarm.settings
+	var low := INF
+	var high := -INF
+	for frame in 300:
+		swarm.step(DT, level.surface_point(0.0, 0.0), Vector3.ZERO)
+		for i in 20:
+			low = minf(low, _above_ground(i))
+			high = maxf(high, _above_ground(i))
+	assert_between(low, s.fly_height - s.bob_height - 0.001, s.fly_height)
+	assert_between(high, s.fly_height, s.fly_height + s.bob_height + 0.001)
+	assert_true(low > s.runner_height + s.radius, "lowest %.2f m" % low)
+
+
+func test_a_flyer_sways_and_bobs_at_two_frequencies() -> void:
+	_fly(20)
+	var s := swarm.settings
+	for i in 20:
+		assert_between(swarm.sway_frequencies[i], s.sway_frequency_min, s.sway_frequency_max)
+		assert_between(swarm.bob_frequencies[i], s.bob_frequency_min, s.bob_frequency_max)
+		assert_true(swarm.bob_frequencies[i] > swarm.sway_frequencies[i])
+	assert_ne(swarm.sway_frequencies[0], swarm.sway_frequencies[1], "each has its own")
+	# Over 10 s flyer 0 covers its whole sway, and its bob crosses the middle
+	# about 2 × its frequency × 10 times (the ground moves under it: ±1).
+	var lane := swarm.lanes[0]
+	var left := INF
+	var right := -INF
+	var crossings := 0
+	var was_above := _above_ground(0) > s.fly_height
+	for frame in 600:
+		swarm.step(DT, level.surface_point(0.0, swarm.positions[0].z * -1.0 - 50.0), Vector3.ZERO)
+		left = minf(left, swarm.positions[0].x - lane)
+		right = maxf(right, swarm.positions[0].x - lane)
+		var above := _above_ground(0) > s.fly_height
+		if above != was_above:
+			crossings += 1
+		was_above = above
+	assert_near(left, -s.sway_width, 0.05)
+	assert_near(right, s.sway_width, 0.05)
+	var expected := 2.0 * swarm.bob_frequencies[0] * 10.0
+	assert_between(float(crossings), expected - 1.5, expected + 1.5)
+
+
+func test_a_flyer_points_where_it_flies() -> void:
+	_fly()
+	for frame in 90:
+		var before := swarm.positions[0]
+		swarm.step(DT, level.surface_point(0.0, 0.0), Vector3.ZERO)
+		var dir := (swarm.positions[0] - before).normalized()
+		# Headless has no real renderer (the MultiMesh reads back identity),
+		# so decode the buffer sent to it (MultiMesh.buffer layout: rows of
+		# basis.x/y/z component then origin).
+		var f := swarm._buffer
+		var xf := Transform3D(Vector3(f[0], f[4], f[8]), Vector3(f[1], f[5], f[9]),
+				Vector3(f[2], f[6], f[10]), Vector3(f[3], f[7], f[11]))
+		assert_near(xf.basis.y.normalized(), dir, 0.001)
+		assert_near(xf.origin, swarm.positions[0], 0.001)
+		# Sway and bob reach ~9 m/s each against 12 m/s forward: up to ~47°
+		# off straight ahead (plus the slope), never more than 60°.
+		assert_true(xf.basis.y.dot(Vector3.FORWARD) > 0.5, "nose forward")
+
+
+func test_a_flyer_left_behind_goes_ahead_again() -> void:
+	_fly()
+	var runner_pos := level.surface_point(0.0, 300.0)
+	swarm.step(DT, runner_pos, Vector3(0, 0, -40))
+	var ahead := runner_pos.z - swarm.positions[0].z
+	var s := swarm.settings
+	assert_between(ahead, s.spawn_distance - 1.0, s.spawn_distance + s.spawn_spread + 1.0)
+	assert_near(swarm.fly_times[0], 0.0, 0.0001)
+
+
+func test_a_flyer_too_far_ahead_comes_back() -> void:
+	_fly()
+	var s := swarm.settings
+	swarm.positions[0].z = -(s.fly_ahead_limit + 5.0)
+	swarm.step(DT, level.surface_point(0.0, 0.0), Vector3.ZERO)
+	assert_between(-swarm.positions[0].z, s.spawn_distance - 1.0, s.spawn_distance + s.spawn_spread + 1.0)
+
+
+func test_a_flyer_touches_a_runner_jumping_into_it() -> void:
+	_fly()
+	var p := swarm.positions[0]
+	var ground := level.surface_point(p.x, -p.z)
+	swarm.step(0.0, ground, Vector3.ZERO)  # standing under it
+	assert_eq(swarm.touches, 0)
+	swarm.step(0.0, p - Vector3.UP * 1.0, Vector3.ZERO)  # head in its belly
+	assert_eq(swarm.touches, 1)
+	swarm.step(0.0, p - Vector3.UP * 1.0, Vector3.ZERO)
+	assert_eq(swarm.touches, 1, "a touch counts once")
+
+
+func test_a_flyer_stays_on_the_strip() -> void:
+	_fly(20)
+	var half := level.settings.width * 0.5 - swarm.settings.edge_margin
+	for frame in 600:
+		swarm.step(DT, level.surface_point(0.0, 0.0), Vector3.ZERO)
+		for i in 20:
+			if absf(swarm.positions[i].x) > half + 0.001:
+				fail("flyer %d at x %.2f" % [i, swarm.positions[i].x])
+				return

@@ -69,7 +69,8 @@ scenes/enemy/     enemy_swarm.gd (EnemySwarm): every enemy, cheap: arrays of
                   height from TerrainHeight (no physics); spawns them ahead,
                   intercepts the runner, counts touches (runner_touched);
                   spacing shared by every type; _steer() is what a type
-                  overrides to move its own way
+                  overrides to move its own way; flying types (enemy3) sway
+                  and bob forward on their own
                   enemy_flankers.gd (EnemyFlankers, extends EnemySwarm):
                   enemy2: keeps a spot beside the runner, matches its speed,
                   shoots at it (shot pool, second MultiMesh, distance hits;
@@ -92,7 +93,8 @@ scripts/core/     terrain_settings.gd (TerrainSettings): every number of the lev
 resources/        terrain.tres, movement.tres (Gabriel tweaks these)
                   enemies/: one EnemySettings per enemy type (enemy1.tres:
                   the red capsules, node Enemy1 in main.tscn; enemy2.tres:
-                  the 6 orange shooters, node Enemy2)
+                  the 6 orange shooters, node Enemy2; enemy3.tres: the blue
+                  flyers, node Enemy3)
 assets/           art/, audio/sfx/, audio/music/, fonts/
                   art/characters/mannequiny/: the runner model (CC-BY 4.0,
                   see CREDITS.md)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/level/endless_level.tscn" id="2_level"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scenes/enemy/enemy_flankers.gd" id="7_flankers"]
 [ext_resource type="Resource" path="res://resources/enemies/enemy2.tres" id="8_enemy2"]
 [ext_resource type="PackedScene" path="res://scenes/menu/enemy_picker.tscn" id="9_picker"]
+[ext_resource type="Resource" path="res://resources/enemies/enemy3.tres" id="10_enemy3"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 ground_bottom_color = Color(0.36, 0.52, 0.74, 1)
@@ -52,8 +53,13 @@ script = ExtResource("7_flankers")
 settings = ExtResource("8_enemy2")
 runner = NodePath("../Runner")
 
+[node name="Enemy3" type="Node3D" parent="EndlessLevel" node_paths=PackedStringArray("runner")]
+script = ExtResource("4_swarm")
+settings = ExtResource("10_enemy3")
+runner = NodePath("../Runner")
+
 [node name="DebugMenu" parent="." node_paths=PackedStringArray("swarms") instance=ExtResource("6_debug")]
-swarms = [NodePath("../EndlessLevel/Enemy1"), NodePath("../EndlessLevel/Enemy2")]
+swarms = [NodePath("../EndlessLevel/Enemy1"), NodePath("../EndlessLevel/Enemy2"), NodePath("../EndlessLevel/Enemy3")]
 
 [node name="EnemyPicker" parent="." node_paths=PackedStringArray("level") instance=ExtResource("9_picker")]
 level = NodePath("../EndlessLevel")

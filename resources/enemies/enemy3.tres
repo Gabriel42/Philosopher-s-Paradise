@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EnemySettings" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/enemy_settings.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+display_name = "enemy3"
+count = 20
+spawn_seed = 13
+color = Color(0.1, 0.35, 0.95, 1)
+flying = true

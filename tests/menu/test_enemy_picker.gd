@@ -100,9 +100,29 @@ func test_remembers_the_choice() -> void:
 	assert_false(enemy2.active)
 
 
-func test_main_scene_lists_both_types_and_does_not_pause_headless() -> void:
+func test_main_scene_lists_every_type_and_does_not_pause_headless() -> void:
 	var main := keep((load("res://scenes/main/main.tscn") as PackedScene).instantiate())
 	var picker := main.get_node("EnemyPicker") as EnemyPicker
-	assert_eq(picker.swarms.size(), 2)
+	var names: Array[String] = []
+	for box in picker.boxes:
+		names.append(box.text)
+	assert_eq(names, ["enemy1", "enemy2", "enemy3"] as Array[String])
 	assert_false(picker.is_open(), "skipped in headless runs")
 	assert_false(get_tree().paused)
+
+
+func test_a_flying_type_can_be_turned_off() -> void:
+	var flyers := EnemySwarm.new()
+	flyers.settings = EnemySettings.new()
+	flyers.settings.display_name = "flyers"
+	flyers.settings.flying = true
+	flyers.settings.count = 5
+	level.add_child(flyers)
+	flyers.set_physics_process(false)
+	var picker := _picker()
+	flyers.step(1.0 / 60.0, level.surface_point(0.0, 0.0), Vector3.ZERO)
+	assert_eq(flyers.positions.size(), 5)
+	picker.boxes[2].button_pressed = false
+	assert_eq(flyers.positions.size(), 0)
+	flyers.step(1.0 / 60.0, level.surface_point(0.0, 0.0), Vector3.ZERO)
+	assert_eq(flyers.positions.size(), 0, "stays empty while off")

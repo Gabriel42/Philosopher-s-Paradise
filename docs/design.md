@@ -46,6 +46,13 @@
   spot beside you (3 per side, 5 m out, 4 m apart) and keep up with your
   speed (a sudden boost leaves them behind for a moment), shooting at you
   every ~2 s. They never overlap. Shots do nothing yet (only counted).
+- **enemy3** (placeholder: blue capsules lying flat, nose forward), 20 of them,
+  fly ~4 m above the ground. Their movement ignores the runner: each one flies
+  forward at its own steady pace while swaying side to side and bobbing up and
+  down at two different frequencies (each has its own), so it loops in a rough,
+  never-repeating spiral and the group looks like a loose wavy flock. They appear
+  ahead of you and come back ahead when you pass them. Out of reach on the
+  ground: you hit one only by jumping into it. Touching one is only counted.
 - Runs: ?
 
 ## Setting and art

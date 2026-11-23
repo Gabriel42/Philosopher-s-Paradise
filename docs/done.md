@@ -2,6 +2,8 @@
 
 Newest first.
 
+- 2026-11-23 (d20f42e, merged into main): enemy3: 20 blue flyers that sway and bob forward on their own, a few metres up; touches counted.
+
 - 2026-11-23 (7849f13): Start screen to tick which enemy types appear (game paused, choice remembered), to test each enemy alone.
 
 - 2026-11-23 (7849f13): enemy2: 6 orange capsules that keep beside the runner, match its speed and shoot at it; debug panel open at start with enemy2 shots fired / hit.
